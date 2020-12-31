@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 enum class ResourceType
 {
 	NONE,
@@ -20,7 +22,7 @@ enum class ResourceType
 class Resource final
 {
 public:
-	explicit Resource(ResourceType resource_type, int resource_number);
+	explicit Resource(const ResourceType resource_type, const int resource_number);
 	ResourceType get_resource_type() const;
 	uint32_t get_resource_number() const;
 

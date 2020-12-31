@@ -1,6 +1,7 @@
 #pragma once
 
 enum class PlayerType;
+
 enum class SettlementType
 {
 	NONE,
@@ -11,7 +12,7 @@ enum class SettlementType
 class Settlement
 {
 public:
-	Settlement(SettlementType settlement_type, PlayerType player_type);
+	Settlement(const SettlementType settlement_type, const PlayerType player_type);
 	SettlementType get_settlement_type() const;
 	PlayerType get_player_type() const;
 
@@ -19,4 +20,3 @@ private:
 	SettlementType m_settlement_type;
 	PlayerType m_player_type;
 };
-
