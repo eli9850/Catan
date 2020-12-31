@@ -19,10 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resources.h" />
+    <ClInclude Include="Game\Board\Board.h" />
+    <ClInclude Include="Game\Players\Players.h" />
+    <ClInclude Include="Game\Board\Resources\Resource.h" />
+    <ClInclude Include="Game\Board\Edges\Edge.h" />
+    <ClInclude Include="Exceptions\ResourceExceptions.h" />
+    <ClInclude Include="Game\Board\Nodes\Node.h" />
+    <ClInclude Include="Game\Board\Structures\Settlement.h" />
+    <ClInclude Include="utils\Consts.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Resources.cpp" />
+    <ClCompile Include="Game\Board\Board.cpp" />
+    <ClCompile Include="Game\Board\Edges\Edge.cpp" />
+    <ClCompile Include="Exceptions\Exceptions.h" />
+    <ClCompile Include="Game\Board\Resources\Resource.cpp" />
+    <ClCompile Include="Game\Board\Nodes\Node.cpp" />
+    <ClCompile Include="Game\Board\Structures\Settlement.cpp" />
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -94,6 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,6 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,6 +137,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,6 +152,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
