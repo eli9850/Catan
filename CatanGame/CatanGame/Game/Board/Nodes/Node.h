@@ -2,26 +2,21 @@
 
 #include <memory>
 
-#include "Game/Board/Resources/Resource.h"
 #include "Game/Board/Edges/Edge.h"
 #include "Game/Board/Structures/Settlement.h"
 
 class Node final
 {
 public:
-	explicit Node(std::shared_ptr<Resource> first_resource, std::shared_ptr<Resource> second_resource,
-	              std::shared_ptr<Resource> third_resource, std::shared_ptr<Edge> first_edge,
-	              std::shared_ptr<Edge> second_edge, std::shared_ptr<Edge> third_edge);
+	explicit Node();
 	void set_settlement(std::unique_ptr<Settlement> settlement);
-
-	SettlementType get_settlement_type() const;
-	PlayerType get_player_type() const;
+	
+	std::shared_ptr<Edge>& get_first_edge();
+	std::shared_ptr<Edge>& get_second_edge();
+	std::shared_ptr<Edge>& get_third_edge();
+	std::unique_ptr<Settlement>& get_settlement();
 
 private:
-	std::shared_ptr<Resource> m_first_resource;
-	std::shared_ptr<Resource> m_second_resource;
-	std::shared_ptr<Resource> m_third_resource;
-
 	std::shared_ptr<Edge> m_first_edge;
 	std::shared_ptr<Edge> m_second_edge;
 	std::shared_ptr<Edge> m_third_edge;

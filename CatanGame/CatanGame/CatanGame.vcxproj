@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Exceptions\SettlementExceptions.h" />
     <ClInclude Include="Game\Board\Board.h" />
     <ClInclude Include="Game\Players\Players.h" />
     <ClInclude Include="Game\Board\Resources\Resource.h" />

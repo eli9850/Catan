@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 enum class ResourceType
 {
@@ -10,19 +10,12 @@ enum class ResourceType
 	SHEEP,
 	TREE,
 	STONE,
-	NONE_PORT,
-	WHEAT_PORT,
-	CLAY_PORT,
-	SHEEP_PORT,
-	TREE_PORT,
-	STONE_PORT,
-
 };
 
 class Resource final
 {
 public:
-	explicit Resource(const ResourceType resource_type, const int resource_number);
+	explicit Resource(const ResourceType resource_type, const uint32_t resource_number);
 	ResourceType get_resource_type() const;
 	uint32_t get_resource_number() const;
 
