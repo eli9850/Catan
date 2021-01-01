@@ -27,7 +27,7 @@ void Board::create_random_resources()
 	std::array<uint32_t, 18> resource_types = {
 		1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5
 	};
-	const auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+	const auto seed = static_cast<uint32_t>(std::chrono::system_clock::now().time_since_epoch().count());
 	srand(seed);
 	shuffle(resource_numbers.begin(), resource_numbers.end(), std::default_random_engine(seed));
 	shuffle(resource_types.begin(), resource_types.end(), std::default_random_engine(seed));
@@ -59,9 +59,8 @@ std::string Board::to_string() const
 	}
 	for (const auto& node : m_nodes)
 	{
-		to_string << static_cast<uint32_t>(node->get_settlement_type()) << static_cast<uint32_t>(
-			node->get_player_type()
-		);
+		to_string << static_cast<uint32_t>(node->get_settlement()->get_settlement_type()) <<
+			static_cast<uint32_t>(node->get_settlement()->get_player_type());
 	}
 	return to_string.str();
 }
@@ -83,7 +82,7 @@ void Board::set_robber_number(const uint32_t resource_number)
 
 void Board::set_node_settlement(const uint32_t node_index, std::unique_ptr<Settlement> settlement)
 {
-	m_nodes[node_index] = std::move(settlement);
+	m_nodes[node_index]->set_settlement(std::move(settlement));
 }
 
 void Board::upgrade_node_settlement(const uint32_t node_index)
@@ -95,6 +94,7 @@ void Board::create_edge(const uint32_t first_node_index, const uint32_t second_n
                         const PlayerType player_type)
 {
 	// need to check if the edge is valid
-	auto new_edge = std::make_shared<Edge>(m_nodes[first_node_index], m_nodes[second_node_index], player_type);
+	auto new_edge = std::make_shared<Edge>(m_nodes[first_node_index], m_nodes[second_node_index],
+	                                       player_type);
 	m_edges.emplace_back(std::move(new_edge));
 }

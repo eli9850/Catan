@@ -1,6 +1,16 @@
 #pragma once
 
-constexpr int NUMBER_OF_NODES_IN_BOARD = 54;
-constexpr int NUMBER_OF_RESOURCES_IN_BOARD = 19;
-constexpr int MIN_RESOURCE_NUMBER = 2;
-constexpr int MAX_RESOURCE_NUMBER = 12;
+constexpr uint32_t MAX_NUMBER_OF_PLAYERS = 4;
+constexpr uint32_t MAX_DICE_NUMBER = 12;
+constexpr uint32_t MIN_DICE_NUMBER = 2;
+constexpr uint32_t NUMBER_OF_NODES_IN_BOARD = 54;
+constexpr uint32_t NUMBER_OF_RESOURCES_IN_BOARD = 19;
+constexpr uint32_t MIN_RESOURCE_NUMBER = 2;
+constexpr uint32_t MAX_RESOURCE_NUMBER = 12;
+constexpr uint32_t NUMBER_OF_KNIGHT_CARDS = 14;
+constexpr uint32_t NUMBER_OF_POINT_CARDS = 5;
+constexpr uint32_t NUMBER_OF_MONOPOL_CARDS = 2;
+constexpr uint32_t NUMBER_OF_ROAD_CARDS = 2;
+constexpr uint32_t NUMBER_OF_ABUNDANCE_CARDS = 2;
+constexpr uint32_t NUMBER_OF_DEVELOPMENT_CARDS = NUMBER_OF_ABUNDANCE_CARDS + NUMBER_OF_KNIGHT_CARDS
+	+ NUMBER_OF_POINT_CARDS + NUMBER_OF_MONOPOL_CARDS + NUMBER_OF_ROAD_CARDS;

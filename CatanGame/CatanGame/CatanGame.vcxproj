@@ -19,7 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Exceptions\GameManagerExceptions.h" />
     <ClInclude Include="Exceptions\SettlementExceptions.h" />
+    <ClInclude Include="Game\GameManager\GameManager.h" />
     <ClInclude Include="Game\Board\Board.h" />
     <ClInclude Include="Game\Players\Players.h" />
     <ClInclude Include="Game\Board\Resources\Resource.h" />
@@ -30,12 +32,14 @@
     <ClInclude Include="Utils\Consts.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\GameManager\GameManager.cpp" />
     <ClCompile Include="Game\Board\Board.cpp" />
     <ClCompile Include="Game\Board\Edges\Edge.cpp" />
     <ClCompile Include="Exceptions\Exceptions.h" />
     <ClCompile Include="Game\Board\Resources\Resource.cpp" />
     <ClCompile Include="Game\Board\Nodes\Node.cpp" />
     <ClCompile Include="Game\Board\Structures\Settlement.cpp" />
+    <ClCompile Include="Game\Players\Players.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
