@@ -1,0 +1,44 @@
+#pragma once
+
+#include <vector>
+#include <array>
+#include <memory>
+#include <string>
+
+#include "Utils/Consts.h"
+#include "IBoard.h"
+
+#include "Game/Board/Nodes/Node.h"
+#include "Game/Board/Edges/Edge.h"
+#include "Game/Board/Resources/Resource.h"
+
+constexpr uint32_t NUMBER_OF_RESOURCES_IN_ROW = 5;
+constexpr uint32_t NUMBER_OF_RESOURCES_IN_COLOMN = 5;
+constexpr uint32_t NUMBER_OF_NODES_IN_ROW = 11;
+constexpr uint32_t NUMBER_OF_NODES_IN_COLOMN = 6;
+constexpr uint32_t NUMBER_OF_EDGES_IN_ROW = 11;
+constexpr uint32_t NUMBER_OF_EDGES_IN_COLOMN = 11;
+constexpr uint32_t NUMBER_OF_VALID_NODE = 19;
+
+
+class BasicBoard : public IBoard
+{
+public:
+	std::string to_string() const;
+	void create_board() override;
+
+	void create_settlement(const uint8_t node_row, const uint8_t node_col, const PlayerType player_type);
+	void upgrade_settlement_to_city(const uint8_t node_row, const uint8_t node_col);
+	void create_edge(const uint8_t edge_row, const uint8_t edge_col, const PlayerType player_type);
+	void set_robber_number(const std::pair<uint8_t, uint8_t> resource_number);
+
+private:
+	bool is_valid_node_index(const uint8_t node_row, const uint8_t node_col) const;
+
+	// This private section is for member of the board class
+private:
+	std::pair<uint8_t, uint8_t> m_robber_resource_number;
+	std::array<std::array<std::shared_ptr<Edge>, NUMBER_OF_EDGES_IN_COLOMN>, NUMBER_OF_EDGES_IN_ROW> m_edges;
+	std::array<std::array<std::shared_ptr<Node>, NUMBER_OF_NODES_IN_COLOMN>, NUMBER_OF_NODES_IN_ROW> m_nodes;
+	std::array<std::array<std::shared_ptr<Resource>, NUMBER_OF_RESOURCES_IN_COLOMN>, NUMBER_OF_RESOURCES_IN_ROW> m_resources;
+};
