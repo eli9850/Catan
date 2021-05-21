@@ -16,9 +16,9 @@ enum class DevelopmentCards
 enum class PlayerType
 {
 	BLUE,
-	RED,
 	YELLOW,
 	WHITE,
+	RED,
 };
 
 class Player final

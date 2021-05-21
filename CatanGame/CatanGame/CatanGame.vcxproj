@@ -19,10 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Exceptions\GameManagerExceptions.h" />
+    <ClInclude Include="Game\GameManager\BasicGameManager.h" />
     <ClInclude Include="Exceptions\StructuretExceptions.h" />
     <ClInclude Include="Game\Board\GameBoard\BasicBoard.h" />
     <ClInclude Include="Game\Board\Structures\City.h" />
     <ClInclude Include="Game\Board\Structures\IStructure.h" />
+    <ClInclude Include="Game\GameManager\IGameManager.h" />
     <ClInclude Include="Game\Players\Players.h" />
     <ClInclude Include="Game\Board\Resources\Resource.h" />
     <ClInclude Include="Game\Board\Edges\Edge.h" />
@@ -32,6 +35,7 @@
     <ClInclude Include="Utils\Consts.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\GameManager\BasicGameManager.cpp" />
     <ClCompile Include="Exceptions\BoardExceptions.h" />
     <ClCompile Include="Game\Board\GameBoard\BasicBoard.cpp" />
     <ClCompile Include="Game\Board\Edges\Edge.cpp" />
