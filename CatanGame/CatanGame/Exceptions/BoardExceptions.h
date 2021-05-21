@@ -2,8 +2,10 @@
 
 #include "Exceptions.h"
 
-INHERIT_EXCEPTION(InvalidEdgeIndex, CatanException)
+INHERIT_EXCEPTION(BoardError, CatanException)
 
-INHERIT_EXCEPTION(InvalidNodeIndex, CatanException)
+INHERIT_EXCEPTION(InvalidEdgeIndex, BoardError)
 
-INHERIT_EXCEPTION(NotSettelemnt, CatanException)
+INHERIT_EXCEPTION(InvalidNodeIndex, BoardError)
+
+INHERIT_EXCEPTION(NotSettelemnt, BoardError)

@@ -2,4 +2,8 @@
 
 #include "Exceptions.h"
 
-INHERIT_EXCEPTION(InvalidPlayersNumber, CatanException)
+INHERIT_EXCEPTION(GameManagerError, CatanException)
+
+INHERIT_EXCEPTION(InvalidPlayersNumber, GameManagerError)
+
+INHERIT_EXCEPTION(UnknownCommand, GameManagerError)

@@ -2,6 +2,8 @@
 
 #include "Exceptions.h"
 
-INHERIT_EXCEPTION(ResourceDoesNotExists, CatanException)
+INHERIT_EXCEPTION(ResourceError, CatanException)
 
-INHERIT_EXCEPTION(WrongResourceNumber, CatanException)
+INHERIT_EXCEPTION(ResourceDoesNotExists, ResourceError)
+
+INHERIT_EXCEPTION(WrongResourceNumber, ResourceError)
