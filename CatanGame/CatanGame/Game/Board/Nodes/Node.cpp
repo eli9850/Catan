@@ -1,31 +1,23 @@
 #include "Node.h"
 
-Node::Node(): m_first_edge(nullptr), m_second_edge(nullptr), m_third_edge(nullptr),
-              m_settlement(nullptr)
+Node::Node(): m_structure(nullptr), m_structure_type(StructureType::NONE)
 {
 }
 
-void Node::set_settlement(std::unique_ptr<Settlement> settlement)
+void Node::set_structure(std::unique_ptr<IStructure> structure)
 {
-	m_settlement = std::move(settlement);
+	m_structure = std::move(structure);
 }
 
-std::shared_ptr<Edge>& Node::get_first_edge()
+std::unique_ptr<IStructure>& Node::get_structure()
 {
-	return m_first_edge;
+	return m_structure;
 }
 
-std::shared_ptr<Edge>& Node::get_second_edge()
-{
-	return m_second_edge;
+StructureType Node::get_structure_type() const {
+	return m_structure_type;
 }
 
-std::shared_ptr<Edge>& Node::get_third_edge()
-{
-	return m_third_edge;
-}
-
-std::unique_ptr<Settlement>& Node::get_settlement()
-{
-	return m_settlement;
+void Node::set_structure_type(const StructureType structure_type) {
+	m_structure_type = structure_type;
 }

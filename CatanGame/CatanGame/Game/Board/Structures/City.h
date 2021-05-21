@@ -3,9 +3,9 @@
 #include "IStructure.h"
 #include "Game/Players/Players.h"
 
-class Settlement : public IStructure
+class City : public IStructure
 {
 public:
-	explicit Settlement(PlayerType player);
+	explicit City(const PlayerType player);
 	void get_resources(const Resource resource) override;
 };
