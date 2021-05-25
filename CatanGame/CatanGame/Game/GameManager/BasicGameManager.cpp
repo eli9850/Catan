@@ -126,6 +126,10 @@ CommandResult BasicGameManager::handle_command(const uint8_t player_number, cons
 	case CommandType::FINISH_TURN:
 		m_turn_number++;
 		return CommandResult::TURN_AS_FINISHED;
+	case CommandType::CITY:
+		auto result = handle_upgrade_settlement_to_city(player_number, parsed_data);
+		send_board_to_everyone();
+		return result;
 	default:
 		throw UnknownCommand("This is an unknown command");
 	}
@@ -192,6 +196,33 @@ CommandResult BasicGameManager::handle_create_settlement(const uint8_t player_nu
 	}
 }
 
+CommandResult BasicGameManager::handle_upgrade_settlement_to_city(const uint8_t player_number, const std::vector<std::string> data) {
+	auto structure_place = split(data[1], ",");
+	uint8_t row_number = stoi(structure_place[0]);
+	uint8_t column_number = stoi(structure_place[1]);
+	if (m_board.get_node(row_number, column_number)->get_structure() == nullptr) {
+		return CommandResult::INVALID_PLACE;
+	}
+	try {
+		if (static_cast<uint8_t>(m_board.get_node(row_number, column_number)->get_structure()->get_player().get_player_type()) != player_number) {
+			return CommandResult::INVALID_PLACE;
+		}
+		if (m_players[player_number]->get_number_of_resource_cards(ResourceType::STONE) < 3 ||
+			m_players[player_number]->get_number_of_resource_cards(ResourceType::WHEAT) < 2) {
+			return CommandResult::NOT_ENOUGH_RESOURCES;
+		}
+		m_players[player_number]->decrease_resource_card(ResourceType::STONE);
+		m_players[player_number]->decrease_resource_card(ResourceType::STONE);
+		m_players[player_number]->decrease_resource_card(ResourceType::STONE);
+		m_players[player_number]->decrease_resource_card(ResourceType::WHEAT);
+		m_players[player_number]->decrease_resource_card(ResourceType::WHEAT);
+		m_board.upgrade_settlement_to_city(row_number, column_number);
+		return CommandResult::SUCCESS;
+	} catch (const BoardError&) {
+		return CommandResult::INVALID_PLACE;
+	}
+}
+
 bool BasicGameManager::is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const {
 
 	if (m_board.get_node(row_number,col_number)->get_structure_type() != StructureType::NONE) {
@@ -235,8 +266,10 @@ bool BasicGameManager::is_possible_to_create_edge(const PlayerType player, const
 }
 
 void BasicGameManager::send_board_to_everyone() const {
+	auto board = m_board.to_string();
+	std::cout << "The board now is\n" << board << "\n\n";
 	for (uint8_t i = 0; i < m_players.size(); i++){
-		m_server.send_data(i, m_board.to_string());
+		m_server.send_data(i, board);
 	}
 }
 

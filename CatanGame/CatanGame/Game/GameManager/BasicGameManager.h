@@ -45,6 +45,7 @@ public:
 	CommandResult handle_command_when_not_your_turn(const uint8_t player_number, const std::string& data);
 	CommandResult handle_create_edge(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_create_settlement(const uint8_t player_number, const std::vector<std::string> data);
+	CommandResult handle_upgrade_settlement_to_city(const uint8_t player_number, const std::vector<std::string> data);
 	
 	
 	// functions for help
