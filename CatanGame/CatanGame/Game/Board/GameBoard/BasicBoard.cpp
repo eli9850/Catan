@@ -140,7 +140,7 @@ void BasicBoard::upgrade_settlement_to_city(const uint8_t node_row, const uint8_
 }
 
 bool BasicBoard::is_valid_resource_index(const uint8_t resource_row, const uint8_t resource_col) const {
-	if (resource_row == 0 && (resource_row == 0 || resource_row == 1)) {
+	if (resource_row == 0 && (resource_col == 0 || resource_col == 1)) {
 		return false;
 	}
 	if (resource_row == 1 && resource_col == 0) {

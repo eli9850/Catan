@@ -113,22 +113,29 @@ void BasicGameManager::wait_and_handle_command(const uint8_t player_number, cons
 
 CommandResult BasicGameManager::handle_command(const uint8_t player_number, const std::string& data) {
 	auto parsed_data = split(data, "\n");
+	CommandResult result;
 	switch (static_cast<CommandType>(std::stoi(parsed_data[0])))
 	{
 	case CommandType::SETTLEMENT:
-		auto result = handle_create_settlement(player_number, parsed_data);
-		send_board_to_everyone();
+		result = handle_create_settlement(player_number, parsed_data);
+		if (result == CommandResult::SUCCESS) {
+			send_board_to_everyone();
+		}
 		return result;
 	case CommandType::EDGE:
-		auto result = handle_create_edge(player_number, parsed_data);
-		send_board_to_everyone();
+		result = handle_create_edge(player_number, parsed_data);
+		if (result == CommandResult::SUCCESS) {
+			send_board_to_everyone();
+		}
 		return result;
 	case CommandType::FINISH_TURN:
 		m_turn_number++;
 		return CommandResult::TURN_AS_FINISHED;
 	case CommandType::CITY:
-		auto result = handle_upgrade_settlement_to_city(player_number, parsed_data);
-		send_board_to_everyone();
+		result = handle_upgrade_settlement_to_city(player_number, parsed_data);
+		if (result == CommandResult::SUCCESS) {
+			send_board_to_everyone();
+		}
 		return result;
 	default:
 		throw UnknownCommand("This is an unknown command");
@@ -145,11 +152,14 @@ CommandResult BasicGameManager::handle_create_edge(const uint8_t player_number, 
 	uint8_t column_number = stoi(edge_place[1]);
 	try {
 		if (is_possible_to_create_edge(static_cast<PlayerType>(player_number), row_number, column_number)) {
+			if (!m_game_started) {
+				m_board.create_edge(row_number, column_number, static_cast<PlayerType>(player_number));
+				return CommandResult::SUCCESS;
+			}
 			if (m_players[player_number]->get_number_of_resource_cards(ResourceType::CLAY) < 1 ||
 				m_players[player_number]->get_number_of_resource_cards(ResourceType::TREE) < 1) {
 				return CommandResult::NOT_ENOUGH_RESOURCES;
 			}
-
 			m_board.create_edge(row_number, column_number, static_cast<PlayerType>(player_number));
 			m_players[player_number]->decrease_resource_card(ResourceType::TREE);
 			m_players[player_number]->decrease_resource_card(ResourceType::CLAY);
