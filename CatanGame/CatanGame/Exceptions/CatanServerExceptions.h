@@ -17,3 +17,5 @@ INHERIT_EXCEPTION(AcceptError, CatanServerError)
 INHERIT_EXCEPTION(SendError, CatanServerError)
 
 INHERIT_EXCEPTION(ReciveError, CatanServerError)
+
+INHERIT_EXCEPTION(ConnectError, CatanServerError)

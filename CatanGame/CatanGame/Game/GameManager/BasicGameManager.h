@@ -5,30 +5,51 @@
 
 #include "IGameManager.h"
 #include "Game/Board/GameBoard/BasicBoard.h"
-#include "Server/CatanServer.h"
+#include "Server/Server.h"
 #include "Game/Players/Players.h"
 
 constexpr int MIN_PLAYER_NUMBER = 3;
 constexpr int MAX_PLAYER_NUMBER = 4;
 
+enum class CommandType {
+	FINISH_TURN,
+	SETTLEMENT,
+	CITY,
+	EDGE,
+};
+
+enum class CommandResult {
+	SUCCESS,
+	NOT_YOUR_TURN,
+	ONLY_SETTLEMENT,
+	ONLY_EDGE,
+	NOT_ENOUGH_RESOURCES,
+	INVALID_PLACE,
+};
 
 class BasicGameManager: public IGameManager
 {
 public:
-	BasicGameManager(const uint8_t number_of_players, const uint16_t port_number);
+	BasicGameManager(const uint8_t number_of_players, const std::string& port_number);
 
 	void start_game() override;
 	const BasicBoard& get_board() const;
 
-private:
-	void wait_for_players();
-	void initialize_players_start();
-	void process_command(const std::string& data);
-	void handle_create_structure(const std::vector<std::string> data);
-	void handle_create_edge(const std::vector<std::string> data);
+public:
+	void connect_players_and_start();
+	void initialize_player_start(const uint8_t player_number);
+	void wait_and_handle_command(const uint8_t player_number, const uint8_t player_turn, const CommandType command, const CommandResult command_in_failure);
+	CommandResult handle_command(const uint8_t player_number, const std::string& data);
+	CommandResult handle_create_settlement(const uint8_t player_number, const std::vector<std::string> data);
+	CommandResult handle_create_edge(const uint8_t player_number, const std::vector<std::string> data);
+	void handle_player(const uint8_t player_number);
+	int8_t get_winner() const;
+	bool is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;
+	bool is_possible_to_create_edge(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;
+	void send_board_to_everyone() const;
 
 private:
-	CatanServer m_server;
+	Server m_server;
 	bool m_game_started;
 	std::vector<std::shared_ptr<Player>> m_players;
 	BasicBoard m_board;

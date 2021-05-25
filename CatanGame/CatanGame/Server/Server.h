@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <winsock2.h>
 #include <vector>
 #include <memory>
 #include <string>
@@ -10,18 +9,18 @@
 
 constexpr uint32_t CATAN_PORT = 12345;
 
-class CatanServer
+class Server
 {
 public:
-	explicit CatanServer(const uint16_t port_number);
+	explicit Server(const std::string& port_number);
 
 	void accept_client();
 
-	std::string recive_data(const uint8_t player_number) const;
+	std::string recive_data(const uint8_t client) const;
 
-	void send_data(const uint8_t player_number, const std::string& send_data) const;
+	void send_data(const uint8_t client, const std::string& send_data) const;
 
-	virtual ~CatanServer();
+	virtual ~Server();
 
 private:
 	std::shared_ptr<Socket> m_server_socket;

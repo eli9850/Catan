@@ -8,4 +8,6 @@ INHERIT_EXCEPTION(InvalidEdgeIndex, BoardError)
 
 INHERIT_EXCEPTION(InvalidNodeIndex, BoardError)
 
+INHERIT_EXCEPTION(InvalidResourceIndex, BoardError)
+
 INHERIT_EXCEPTION(NotSettelemnt, BoardError)

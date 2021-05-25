@@ -1,13 +1,12 @@
-#include "CatanServer.h"
+#include "Server.h"
 #include "Exceptions/CatanServerExceptions.h"
 #include "Exceptions/SocketExceptions.h"
 
 #include <windows.h>
 #include <ws2tcpip.h>
-#include <iphlpapi.h>
 #include <iostream>
 
-CatanServer::CatanServer(const uint16_t port_number) {
+Server::Server(const std::string& port_number) {
 
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -15,7 +14,6 @@ CatanServer::CatanServer(const uint16_t port_number) {
 	}
 
 	addrinfo* result = nullptr;
-	addrinfo* ptr = nullptr;
 	addrinfo hints;
 
 	ZeroMemory(&hints, sizeof(hints));
@@ -24,7 +22,7 @@ CatanServer::CatanServer(const uint16_t port_number) {
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
 
-	if (getaddrinfo(nullptr, std::to_string(port_number).c_str() , &hints, &result) != 0) {
+	if (getaddrinfo(nullptr, port_number.c_str() , &hints, &result) != 0) {
 		WSACleanup();
 		throw FailedInitializeWinsock("Could not initialize thw winsock lib");
 	}
@@ -50,32 +48,30 @@ CatanServer::CatanServer(const uint16_t port_number) {
 	}
 }
 
-void CatanServer::accept_client() {
+void Server::accept_client() {
 	Socket socket = accept(m_server_socket->get(), NULL, NULL);
 	if (socket.get() == INVALID_SOCKET) {
 		throw AcceptError("Could not accept client");
 	}
-	m_clients_sockets.push_back(std::move(socket));
+	m_clients_sockets.push_back(std::move(socket));	
 }
 
-std::string CatanServer::recive_data(const uint8_t player_number) const {
+std::string Server::recive_data(const uint8_t client) const {
 	char recived_data[1024] = { "0" };
-	auto t = m_clients_sockets[player_number].get();
-	auto a = recv(t, recived_data, 1024, 0);
-	if (a <= 0) {
-		throw SendError("Could not send the data with error: " + std::to_string(WSAGetLastError()));
+	if (recv(m_clients_sockets[client].get(), recived_data, 1024, 0) <= 0) {
+		throw ReciveError("Could not recive the data with error: " + std::to_string(WSAGetLastError()));
 	}
 	return recived_data;
 }
 
-void CatanServer::send_data(const uint8_t player_number, const std::string& send_data) const {
+void Server::send_data(const uint8_t client, const std::string& send_data) const {
 
-	if (send(m_clients_sockets[player_number].get(), send_data.c_str(), send_data.size(), 0) != send_data.size()) {
-		throw SendError("Could not send the data");
+	if (send(m_clients_sockets[client].get(), send_data.c_str(), send_data.size(), 0) != send_data.size()) {
+		throw SendError("Could not recive the data with error: " + std::to_string(WSAGetLastError()));
 	}
 }
 
-CatanServer::~CatanServer() {
+Server::~Server() {
 	try {
 		WSACleanup();
 	}

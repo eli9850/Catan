@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CatanGame", "CatanGame\CatanGame.vcxproj", "{853AB4BD-DE78-40A2-9A2A-A18DA5024655}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CatanGameClient", "CatanGameClient\CatanGameClient.vcxproj", "{128902FC-B7B0-4488-941B-D73171C4D0DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{853AB4BD-DE78-40A2-9A2A-A18DA5024655}.Release|x64.Build.0 = Release|x64
 		{853AB4BD-DE78-40A2-9A2A-A18DA5024655}.Release|x86.ActiveCfg = Release|Win32
 		{853AB4BD-DE78-40A2-9A2A-A18DA5024655}.Release|x86.Build.0 = Release|Win32
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Debug|x64.ActiveCfg = Debug|x64
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Debug|x64.Build.0 = Debug|x64
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Debug|x86.ActiveCfg = Debug|Win32
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Debug|x86.Build.0 = Debug|Win32
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Release|x64.ActiveCfg = Release|x64
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Release|x64.Build.0 = Release|x64
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Release|x86.ActiveCfg = Release|Win32
+		{128902FC-B7B0-4488-941B-D73171C4D0DD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

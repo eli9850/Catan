@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Exceptions\SocketExceptions.h" />
-    <ClInclude Include="Server\CatanServer.h" />
+    <ClInclude Include="Server\Server.h" />
     <ClInclude Include="Exceptions\GameManagerExceptions.h" />
     <ClInclude Include="Game\GameManager\BasicGameManager.h" />
     <ClInclude Include="Exceptions\StructuretExceptions.h" />
@@ -36,10 +36,11 @@
     <ClInclude Include="Game\Board\Structures\Settlement.h" />
     <ClInclude Include="Server\Socket.h" />
     <ClInclude Include="Utils\Consts.h" />
+    <ClInclude Include="Utils\StringUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exceptions\CatanServerExceptions.h" />
-    <ClCompile Include="Server\CatanServer.cpp" />
+    <ClCompile Include="Server\Server.cpp" />
     <ClCompile Include="Game\GameManager\BasicGameManager.cpp" />
     <ClCompile Include="Exceptions\BoardExceptions.h" />
     <ClCompile Include="Game\Board\GameBoard\BasicBoard.cpp" />
@@ -53,6 +54,7 @@
     <ClCompile Include="Game\Players\Players.cpp" />
     <ClCompile Include="Server\Socket.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Utils\StringUtils.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -141,6 +143,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,6 +159,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -171,6 +175,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

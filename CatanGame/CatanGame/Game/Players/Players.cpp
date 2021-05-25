@@ -43,3 +43,7 @@ PlayerType Player::get_player_type() const
 {
 	return m_player_type;
 }
+
+uint8_t Player::get_number_of_resource_cards(const ResourceType resource) const {
+	return m_resource_cards.at(resource);
+}
