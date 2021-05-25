@@ -1,5 +1,6 @@
 #include "BasicGameManager.h"
 #include "Exceptions/GameManagerExceptions.h"
+#include "Exceptions/BoardExceptions.h"
 #include "Utils/StringUtils.h"
 
 #include <iostream>
@@ -50,7 +51,8 @@ void BasicGameManager::handle_player(const uint8_t player_number) {
 	while (true) {
 		data = m_server.recive_data(player_number);
 		if (m_turn_number % m_players.size() != player_number) {
-			result_to_send << std::to_string(static_cast<uint8_t>(CommandResult::NOT_YOUR_TURN));
+			auto result = handle_command_when_not_your_turn(player_number, data);
+			result_to_send << std::to_string(static_cast<uint8_t>(result));
 			m_server.send_data(player_number, result_to_send.str());
 		}
 		else {
@@ -73,6 +75,9 @@ void BasicGameManager::initialize_player_start(const uint8_t player_number) {
 	wait_and_handle_command(player_number, m_players.size() - (m_turn_number % m_players.size()), CommandType::EDGE, CommandResult::ONLY_EDGE);
 	send_board_to_everyone();
 	m_turn_number++;
+	if (player_number == 0) {
+		m_game_started = true;
+	}
 }
 
 void BasicGameManager::wait_and_handle_command(const uint8_t player_number, const uint8_t player_turn, const CommandType command, const CommandResult command_in_failure){
@@ -92,31 +97,18 @@ void BasicGameManager::wait_and_handle_command(const uint8_t player_number, cons
 			}
 			else {
 				if (command == CommandType::SETTLEMENT) {
-					result << std::to_string(static_cast<uint8_t>(handle_create_settlement(player_number, parsed_data)) - 1);
+					result << std::to_string(static_cast<uint8_t>(handle_create_settlement(player_number, parsed_data)));
 					m_server.send_data(player_number, result.str());
 					break;
 				}
 				else if (command == CommandType::EDGE) {
-					result << std::to_string(static_cast<uint8_t>(handle_create_edge(player_number, parsed_data)) - 1);
+					result << std::to_string(static_cast<uint8_t>(handle_create_edge(player_number, parsed_data)));
 					m_server.send_data(player_number, result.str());
 					break;
 				}
 			}
 		}
 	}
-}
-
-const BasicBoard& BasicGameManager::get_board() const {
-	return m_board;
-}
-
-int8_t BasicGameManager::get_winner() const {
-	for (uint8_t i = 0; i < m_players.size(); i++) {
-		if (m_players[0]->get_number_of_points() >= 10) {
-			return i;
-		}
-	}
-	return -1;
 }
 
 CommandResult BasicGameManager::handle_command(const uint8_t player_number, const std::string& data) {
@@ -124,37 +116,44 @@ CommandResult BasicGameManager::handle_command(const uint8_t player_number, cons
 	switch (static_cast<CommandType>(std::stoi(parsed_data[0])))
 	{
 	case CommandType::SETTLEMENT:
-		return handle_create_settlement(player_number, parsed_data);
-		break;
+		auto result = handle_create_settlement(player_number, parsed_data);
+		send_board_to_everyone();
+		return result;
 	case CommandType::EDGE:
-		return handle_create_edge(player_number, parsed_data);
-		break;
+		auto result = handle_create_edge(player_number, parsed_data);
+		send_board_to_everyone();
+		return result;
 	case CommandType::FINISH_TURN:
 		m_turn_number++;
-		break;
+		return CommandResult::TURN_AS_FINISHED;
 	default:
 		throw UnknownCommand("This is an unknown command");
 	}
+}
+
+CommandResult BasicGameManager::handle_command_when_not_your_turn(const uint8_t player_number, const std::string& data) {
+	return CommandResult::NOT_YOUR_TURN;
 }
 
 CommandResult BasicGameManager::handle_create_edge(const uint8_t player_number, const std::vector<std::string> data) {
 	auto edge_place = split(data[1], ",");
 	uint8_t row_number = stoi(edge_place[0]);
 	uint8_t column_number = stoi(edge_place[1]);
-	if (is_possible_to_create_edge(static_cast<PlayerType>(player_number), row_number, column_number)) {
-		if (m_players[player_number]->get_number_of_resource_cards(ResourceType::CLAY) < 1 ||
-			m_players[player_number]->get_number_of_resource_cards(ResourceType::TREE) < 1) {
-			return CommandResult::NOT_ENOUGH_RESOURCES;
-		}
+	try {
+		if (is_possible_to_create_edge(static_cast<PlayerType>(player_number), row_number, column_number)) {
+			if (m_players[player_number]->get_number_of_resource_cards(ResourceType::CLAY) < 1 ||
+				m_players[player_number]->get_number_of_resource_cards(ResourceType::TREE) < 1) {
+				return CommandResult::NOT_ENOUGH_RESOURCES;
+			}
+
 			m_board.create_edge(row_number, column_number, static_cast<PlayerType>(player_number));
 			m_players[player_number]->decrease_resource_card(ResourceType::TREE);
 			m_players[player_number]->decrease_resource_card(ResourceType::CLAY);
-			return CommandResult::SUCCESS_WITH_INFO;
+			return CommandResult::SUCCESS;
+		}
+	} catch (const BoardError&) {
+			return CommandResult::INVALID_PLACE;
 	}
-	else {
-		return CommandResult::INVALID_PLACE;
-	}
-	
 }
 
 CommandResult BasicGameManager::handle_create_settlement(const uint8_t player_number, const std::vector<std::string> data) {
@@ -162,25 +161,32 @@ CommandResult BasicGameManager::handle_create_settlement(const uint8_t player_nu
 	uint8_t row_number = stoi(structure_place[0]);
 	uint8_t column_number = stoi(structure_place[1]);
 	if (!m_game_started) {
-		m_board.create_settlement(row_number, column_number, static_cast<PlayerType>(player_number));
-		return CommandResult::SUCCESS_WITH_INFO;
+		try {
+			m_board.create_settlement(row_number, column_number, static_cast<PlayerType>(player_number));
+			return CommandResult::SUCCESS;
+		} catch (const BoardError&) {
+			return CommandResult::INVALID_PLACE;
+		}
+		
 	}
 	else {
-		if (is_possible_to_create_settlement(static_cast<PlayerType>(player_number), row_number, column_number)) {
-			if (m_players[player_number]->get_number_of_resource_cards(ResourceType::CLAY) < 1 ||
-				m_players[player_number]->get_number_of_resource_cards(ResourceType::WHEAT) < 1||
-				m_players[player_number]->get_number_of_resource_cards(ResourceType::TREE) < 1||
-				m_players[player_number]->get_number_of_resource_cards(ResourceType::SHEEP) < 1 ) {
-				return CommandResult::NOT_ENOUGH_RESOURCES;
+		try {
+			if (is_possible_to_create_settlement(static_cast<PlayerType>(player_number), row_number, column_number)) {
+				if (m_players[player_number]->get_number_of_resource_cards(ResourceType::CLAY) < 1 ||
+					m_players[player_number]->get_number_of_resource_cards(ResourceType::WHEAT) < 1 ||
+					m_players[player_number]->get_number_of_resource_cards(ResourceType::TREE) < 1 ||
+					m_players[player_number]->get_number_of_resource_cards(ResourceType::SHEEP) < 1) {
+					return CommandResult::NOT_ENOUGH_RESOURCES;
+				}
+				m_board.create_settlement(row_number, column_number, static_cast<PlayerType>(player_number));
+				m_players[player_number]->decrease_resource_card(ResourceType::CLAY);
+				m_players[player_number]->decrease_resource_card(ResourceType::WHEAT);
+				m_players[player_number]->decrease_resource_card(ResourceType::TREE);
+				m_players[player_number]->decrease_resource_card(ResourceType::SHEEP);
+				return CommandResult::SUCCESS;
 			}
-			m_board.create_settlement(row_number, column_number, static_cast<PlayerType>(player_number));
-			m_players[player_number]->decrease_resource_card(ResourceType::CLAY);
-			m_players[player_number]->decrease_resource_card(ResourceType::WHEAT);
-			m_players[player_number]->decrease_resource_card(ResourceType::TREE);
-			m_players[player_number]->decrease_resource_card(ResourceType::SHEEP);
-			return CommandResult::SUCCESS_WITH_INFO;
 		}
-		else {
+		catch (const BoardError&) {
 			return CommandResult::INVALID_PLACE;
 		}
 	}
@@ -232,4 +238,17 @@ void BasicGameManager::send_board_to_everyone() const {
 	for (uint8_t i = 0; i < m_players.size(); i++){
 		m_server.send_data(i, m_board.to_string());
 	}
+}
+
+const BasicBoard& BasicGameManager::get_board() const {
+	return m_board;
+}
+
+int8_t BasicGameManager::get_winner() const {
+	for (uint8_t i = 0; i < m_players.size(); i++) {
+		if (m_players[0]->get_number_of_points() >= 10) {
+			return i;
+		}
+	}
+	return -1;
 }
