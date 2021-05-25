@@ -2,4 +2,6 @@
 
 #include "Exceptions.h"
 
-INHERIT_EXCEPTION(UpgradeSettlementError, CatanException)
+INHERIT_EXCEPTION(StructureError, CatanException)
+
+INHERIT_EXCEPTION(UpgradeSettlementError, StructureError)

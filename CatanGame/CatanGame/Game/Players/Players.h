@@ -16,9 +16,9 @@ enum class DevelopmentCards
 enum class PlayerType
 {
 	BLUE,
-	RED,
 	YELLOW,
 	WHITE,
+	RED,
 };
 
 class Player final
@@ -31,11 +31,12 @@ public:
 	void decrease_development_card(const DevelopmentCards development_card);
 	PlayerType get_player_type() const;
 	uint32_t get_number_of_points() const;
+	uint8_t get_number_of_resource_cards(const ResourceType resource) const;
 
 
 private:
 	PlayerType m_player_type;
-	std::unordered_map<DevelopmentCards, uint32_t> m_development_cards;
-	std::unordered_map<ResourceType, uint32_t> m_resource_cards;
+	std::unordered_map<DevelopmentCards, uint8_t> m_development_cards;
+	std::unordered_map<ResourceType, uint8_t> m_resource_cards;
 	uint32_t m_number_of_points;
 };

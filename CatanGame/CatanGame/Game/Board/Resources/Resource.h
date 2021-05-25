@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+constexpr int MIN_RESOURCE_NUMBER = 2;
+constexpr int MAX_RESOURCE_NUMBER = 12;
+
 enum class ResourceType
 {
 	NONE,
