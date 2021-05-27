@@ -47,7 +47,7 @@ private:
 	// This private section is for member of the board class
 private:
 	std::pair<uint8_t, uint8_t> m_robber_resource_number;
-	std::array<std::array<std::shared_ptr<Edge>, NUMBER_OF_EDGES_IN_COLUMN>, NUMBER_OF_EDGES_IN_ROW> m_edges;
-	std::array<std::array<std::shared_ptr<Node>, NUMBER_OF_NODES_IN_COLUMN>, NUMBER_OF_NODES_IN_ROW> m_nodes;
-	std::array<std::array<std::shared_ptr<Resource>, NUMBER_OF_RESOURCES_IN_COLUMN>, NUMBER_OF_RESOURCES_IN_ROW> m_resources;
+	std::array<std::array<std::shared_ptr<Edge>, NUMBER_OF_EDGES_IN_ROW>, NUMBER_OF_EDGES_IN_COLUMN> m_edges;
+	std::array<std::array<std::shared_ptr<Node>, NUMBER_OF_NODES_IN_ROW>, NUMBER_OF_NODES_IN_COLUMN> m_nodes;
+	std::array<std::array<std::shared_ptr<Resource>, NUMBER_OF_RESOURCES_IN_ROW>, NUMBER_OF_RESOURCES_IN_COLUMN> m_resources;
 };

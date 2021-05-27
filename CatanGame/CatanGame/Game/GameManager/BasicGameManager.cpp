@@ -59,22 +59,23 @@ void BasicGameManager::handle_player(const uint8_t player_number) {
 			auto result = handle_command(player_number, data);
 			result_to_send << std::to_string(static_cast<uint8_t>(result));
 			m_server.send_data(player_number, result_to_send.str());
+			std::cout << "The result is: " << std::to_string(static_cast<uint8_t>(result)) << "\n\n";
 		}
 	}
 }
 
 void BasicGameManager::initialize_player_start(const uint8_t player_number) {
 
-	wait_and_handle_command(player_number, m_turn_number, CommandType::SETTLEMENT, CommandResult::ONLY_SETTLEMENT);
+	wait_and_handle_command(player_number, player_number, CommandType::SETTLEMENT, CommandResult::ONLY_SETTLEMENT);
 	send_board_to_everyone();
-	wait_and_handle_command(player_number, m_turn_number, CommandType::EDGE, CommandResult::ONLY_EDGE);
+	wait_and_handle_command(player_number, player_number, CommandType::EDGE, CommandResult::ONLY_EDGE);
 	send_board_to_everyone();
-	m_turn_number++;
-	wait_and_handle_command(player_number, m_players.size() - (m_turn_number % m_players.size()), CommandType::SETTLEMENT, CommandResult::ONLY_SETTLEMENT);
+	pass_turn();
+	wait_and_handle_command(player_number, ((m_players.size() - 1) - player_number), CommandType::SETTLEMENT, CommandResult::ONLY_SETTLEMENT);
 	send_board_to_everyone();
-	wait_and_handle_command(player_number, m_players.size() - (m_turn_number % m_players.size()), CommandType::EDGE, CommandResult::ONLY_EDGE);
+	wait_and_handle_command(player_number, ((m_players.size() - 1) - player_number) % m_players.size(), CommandType::EDGE, CommandResult::ONLY_EDGE);
 	send_board_to_everyone();
-	m_turn_number++;
+	pass_turn();
 	if (player_number == 0) {
 		m_game_started = true;
 	}
@@ -82,10 +83,10 @@ void BasicGameManager::initialize_player_start(const uint8_t player_number) {
 
 void BasicGameManager::wait_and_handle_command(const uint8_t player_number, const uint8_t player_turn, const CommandType command, const CommandResult command_in_failure){
 	std::string data;
-	std::stringstream result;
 	while (true) {
+		std::stringstream result;
 		data = m_server.recive_data(player_number);
-		if (m_turn_number != player_turn) {
+		if (m_turn_number % m_players.size() != player_turn) {
 			result << std::to_string(static_cast<uint8_t>(CommandResult::NOT_YOUR_TURN));
 			m_server.send_data(player_number, result.str());
 		}
@@ -97,14 +98,22 @@ void BasicGameManager::wait_and_handle_command(const uint8_t player_number, cons
 			}
 			else {
 				if (command == CommandType::SETTLEMENT) {
-					result << std::to_string(static_cast<uint8_t>(handle_create_settlement(player_number, parsed_data)));
+					auto create_result = handle_create_settlement(player_number, parsed_data);
+					result << std::to_string(static_cast<uint8_t>(create_result));
+					std::cout << "The result is: " << std::to_string(static_cast<uint8_t>(create_result)) << "\n\n";
 					m_server.send_data(player_number, result.str());
-					break;
+					if (create_result == CommandResult::SUCCESS) {
+						break;
+					}
 				}
 				else if (command == CommandType::EDGE) {
-					result << std::to_string(static_cast<uint8_t>(handle_create_edge(player_number, parsed_data)));
+					auto create_result = handle_create_edge(player_number, parsed_data);
+					result << std::to_string(static_cast<uint8_t>(create_result));
+					std::cout << "The result is: " << std::to_string(static_cast<uint8_t>(create_result)) << "\n\n";
 					m_server.send_data(player_number, result.str());
-					break;
+					if (create_result == CommandResult::SUCCESS) {
+						break;
+					}
 				}
 			}
 		}
@@ -129,7 +138,7 @@ CommandResult BasicGameManager::handle_command(const uint8_t player_number, cons
 		}
 		return result;
 	case CommandType::FINISH_TURN:
-		m_turn_number++;
+		pass_turn();
 		return CommandResult::TURN_AS_FINISHED;
 	case CommandType::CITY:
 		result = handle_upgrade_settlement_to_city(player_number, parsed_data);
@@ -165,6 +174,9 @@ CommandResult BasicGameManager::handle_create_edge(const uint8_t player_number, 
 			m_players[player_number]->decrease_resource_card(ResourceType::CLAY);
 			return CommandResult::SUCCESS;
 		}
+		else {
+			return CommandResult::INVALID_PLACE;
+		}
 	} catch (const BoardError&) {
 			return CommandResult::INVALID_PLACE;
 	}
@@ -176,8 +188,16 @@ CommandResult BasicGameManager::handle_create_settlement(const uint8_t player_nu
 	uint8_t column_number = stoi(structure_place[1]);
 	if (!m_game_started) {
 		try {
+			if (m_board.get_node(row_number, column_number)->get_structure_type() != StructureType::NONE) {
+				return CommandResult::INVALID_PLACE;
+			}
+			auto adjacent_nodes = m_board.get_node_adjacent_nodes(row_number, column_number);
+			if (adjacent_nodes.size() != 0) {
+				return CommandResult::INVALID_PLACE;
+			}
 			m_board.create_settlement(row_number, column_number, static_cast<PlayerType>(player_number));
 			return CommandResult::SUCCESS;
+						
 		} catch (const BoardError&) {
 			return CommandResult::INVALID_PLACE;
 		}
@@ -198,6 +218,9 @@ CommandResult BasicGameManager::handle_create_settlement(const uint8_t player_nu
 				m_players[player_number]->decrease_resource_card(ResourceType::TREE);
 				m_players[player_number]->decrease_resource_card(ResourceType::SHEEP);
 				return CommandResult::SUCCESS;
+			}
+			else {
+				return CommandResult::INVALID_PLACE;
 			}
 		}
 		catch (const BoardError&) {
@@ -276,10 +299,29 @@ bool BasicGameManager::is_possible_to_create_edge(const PlayerType player, const
 }
 
 void BasicGameManager::send_board_to_everyone() const {
+	
 	auto board = m_board.to_string();
 	std::cout << "The board now is\n" << board << "\n\n";
+	
+	std::stringstream data;
+	data << std::to_string(static_cast<uint8_t>(CommandResult::INFO)) << "\n";
+	data << board;
+	// TODO: return also number of roads number of cards number of points and number of dev cards in this command
 	for (uint8_t i = 0; i < m_players.size(); i++){
-		m_server.send_data(i, board);
+		m_server.send_data(i, data.str());
+	}
+}
+
+void BasicGameManager::pass_turn() {
+	m_turn_number++;
+	if (m_turn_number >= m_players.size() && m_turn_number < 2 * m_players.size()) {
+		auto a = ((m_players.size() - 1) - (m_turn_number % m_players.size())) % m_players.size();
+		m_server.send_data(a,
+			std::to_string(static_cast<uint8_t>(CommandResult::YOUR_TURN)));
+	}
+	else {
+		m_server.send_data((m_turn_number) % m_players.size(),
+			std::to_string(static_cast<uint8_t>(CommandResult::YOUR_TURN)));
 	}
 }
 

@@ -14,17 +14,17 @@ std::string BasicBoard::to_string() const
 {
 	std::stringstream to_string;
 	
-	for (auto i = 0; i < NUMBER_OF_RESOURCES_IN_ROW; i++) {
-		for (auto j = 0; j < NUMBER_OF_RESOURCES_IN_COLUMN; j++) {
+	for (auto i = 0; i < NUMBER_OF_RESOURCES_IN_COLUMN; i++) {
+		for (auto j = 0; j < NUMBER_OF_RESOURCES_IN_ROW; j++) {
 			to_string << std::to_string(static_cast<uint8_t>(m_resources[i][j]->get_resource_type()))
 				<< "," << m_resources[i][j]->get_resource_number() << ";";
 		}
 	}
 	to_string << "\n";
-	for (auto i = 0; i < NUMBER_OF_NODES_IN_ROW; i++) {
-		for (auto j = 0; j < NUMBER_OF_NODES_IN_COLUMN; j++) {
+	for (auto i = 0; i < NUMBER_OF_NODES_IN_COLUMN; i++) {
+		for (auto j = 0; j < NUMBER_OF_NODES_IN_ROW; j++) {
 			if (m_nodes[i][j]->get_structure() == nullptr) {
-				to_string << "0,0;";
+				to_string << "0,5;";
 			}
 			else {
 				to_string << std::to_string(static_cast<uint8_t>(m_nodes[i][j]->get_structure_type())) << "," <<
@@ -35,10 +35,10 @@ std::string BasicBoard::to_string() const
 		}
 	}
 	to_string << "\n";
-	for (auto i = 0; i < NUMBER_OF_EDGES_IN_ROW; i++){
-		for (auto j = 0; j < NUMBER_OF_EDGES_IN_COLUMN; j++) {
+	for (auto i = 0; i < NUMBER_OF_EDGES_IN_COLUMN; i++){
+		for (auto j = 0; j < NUMBER_OF_EDGES_IN_ROW; j++) {
 			if (m_edges[i][j] == nullptr) {
-				to_string << "0;";
+				to_string << "5;";
 			}
 			else {
 				to_string << std::to_string(static_cast<uint8_t>(m_edges[i][j]->get_player())) << ";";
@@ -91,9 +91,9 @@ void BasicBoard::create_board()
 			}
 		}
 	}
-	for (int i = 0; i < NUMBER_OF_NODES_IN_ROW; i++)
+	for (int i = 0; i < NUMBER_OF_NODES_IN_COLUMN; i++)
 	{
-		for (int j = 0; j < NUMBER_OF_NODES_IN_COLUMN; j++)
+		for (int j = 0; j < NUMBER_OF_NODES_IN_ROW; j++)
 		{
 			m_nodes[i][j] = std::make_shared<Node>();
 		}
@@ -219,7 +219,7 @@ std::shared_ptr<Node> BasicBoard::get_node(const uint8_t row_number, const uint8
 	if (!is_valid_node_index(row_number, col_number)) {
 		throw InvalidNodeIndex("The index is invlaid");
 	}
-	if (row_number < 0 || row_number >= NUMBER_OF_NODES_IN_ROW || col_number < 0 || col_number >= NUMBER_OF_NODES_IN_COLUMN) {
+	if (row_number < 0 || row_number >= NUMBER_OF_NODES_IN_COLUMN || col_number < 0 || col_number >= NUMBER_OF_NODES_IN_ROW) {
 		throw InvalidNodeIndex("The index is invlaid");
 	}
 	return m_nodes[row_number][col_number];

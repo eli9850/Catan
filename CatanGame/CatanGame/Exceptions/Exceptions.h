@@ -8,7 +8,7 @@ class exception_name : public parent_exception {                                
 public:                                                                               \
     exception_name(std::string message): parent_exception(std::move(message)) {}      \
 	std::string get_message() const override {                                        \
-		return (std::string(#exception_name": ") + m_message).c_str();                \
+		return std::string("exception: ") + m_message;                                \
 	}                                                                                 \
 };
 

@@ -20,6 +20,8 @@ enum class CommandType {
 
 enum class CommandResult {
 	SUCCESS,
+	INFO,
+	YOUR_TURN,
 	NOT_YOUR_TURN,
 	ONLY_SETTLEMENT,
 	ONLY_EDGE,
@@ -52,6 +54,7 @@ public:
 	bool is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;
 	bool is_possible_to_create_edge(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;
 	void send_board_to_everyone() const;
+	void pass_turn();
 	const BasicBoard& get_board() const;
 	int8_t get_winner() const;
 
