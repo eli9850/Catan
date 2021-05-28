@@ -71,9 +71,9 @@ void BasicGameManager::initialize_player_start(const uint8_t player_number) {
 	wait_and_handle_command(player_number, player_number, CommandType::EDGE, CommandResult::ONLY_EDGE);
 	send_board_to_everyone();
 	pass_turn();
-	wait_and_handle_command(player_number, ((m_players.size() - 1) - (m_turn_number % m_players.size())) % m_players.size(), CommandType::SETTLEMENT, CommandResult::ONLY_SETTLEMENT);
+	wait_and_handle_command(player_number, ((m_players.size() - 1) - player_number) % m_players.size(), CommandType::SETTLEMENT, CommandResult::ONLY_SETTLEMENT);
 	send_board_to_everyone();
-	wait_and_handle_command(player_number, ((m_players.size() - 1) - (m_turn_number % m_players.size())) % m_players.size(), CommandType::EDGE, CommandResult::ONLY_EDGE);
+	wait_and_handle_command(player_number, ((m_players.size() - 1) - player_number) % m_players.size(), CommandType::EDGE, CommandResult::ONLY_EDGE);
 	send_board_to_everyone();
 	pass_turn();
 	if (player_number == 0) {
@@ -83,10 +83,10 @@ void BasicGameManager::initialize_player_start(const uint8_t player_number) {
 
 void BasicGameManager::wait_and_handle_command(const uint8_t player_number, const uint8_t player_turn, const CommandType command, const CommandResult command_in_failure){
 	std::string data;
-	std::stringstream result;
 	while (true) {
+		std::stringstream result;
 		data = m_server.recive_data(player_number);
-		if (player_number != player_turn) {
+		if (m_turn_number % m_players.size() != player_turn) {
 			result << std::to_string(static_cast<uint8_t>(CommandResult::NOT_YOUR_TURN));
 			m_server.send_data(player_number, result.str());
 		}
@@ -98,18 +98,22 @@ void BasicGameManager::wait_and_handle_command(const uint8_t player_number, cons
 			}
 			else {
 				if (command == CommandType::SETTLEMENT) {
-					auto a = std::to_string(static_cast<uint8_t>(handle_create_settlement(player_number, parsed_data)));
-					result << a;
-					std::cout << "The result is: " << a << "\n\n";
+					auto create_result = handle_create_settlement(player_number, parsed_data);
+					result << std::to_string(static_cast<uint8_t>(create_result));
+					std::cout << "The result is: " << std::to_string(static_cast<uint8_t>(create_result)) << "\n\n";
 					m_server.send_data(player_number, result.str());
-					break;
+					if (create_result == CommandResult::SUCCESS) {
+						break;
+					}
 				}
 				else if (command == CommandType::EDGE) {
-					auto a = std::to_string(static_cast<uint8_t>(handle_create_edge(player_number, parsed_data)));
-					result << a;
-					std::cout << "The result is: " << a << "\n\n";
+					auto create_result = handle_create_edge(player_number, parsed_data);
+					result << std::to_string(static_cast<uint8_t>(create_result));
+					std::cout << "The result is: " << std::to_string(static_cast<uint8_t>(create_result)) << "\n\n";
 					m_server.send_data(player_number, result.str());
-					break;
+					if (create_result == CommandResult::SUCCESS) {
+						break;
+					}
 				}
 			}
 		}

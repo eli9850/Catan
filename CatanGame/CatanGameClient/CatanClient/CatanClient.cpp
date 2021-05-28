@@ -95,7 +95,7 @@ void CatanClient::handle_build_edge() {
 		std::cout << "could not create the edge" << std::endl;
 		return;
 	}
-
+	m_command_result.pop();
 	m_resource_cards[ResourceType::TREE]--;
 	m_resource_cards[ResourceType::CLAY]--;
 	std::cout << "create the edge" << std::endl;
@@ -129,7 +129,7 @@ void CatanClient::handle_build_settlement() {
 		std::cout << "could not create the settlement" << std::endl;
 		return;
 	}
-
+	m_command_result.pop();
 	m_resource_cards[ResourceType::TREE]--;
 	m_resource_cards[ResourceType::CLAY]--;
 	m_resource_cards[ResourceType::SHEEP]--;
@@ -153,7 +153,7 @@ void CatanClient::handle_finish_turn() {
 		std::cout << "could not finish turn" << std::endl;
 		return;
 	}
-
+	m_command_result.pop();
 	std::cout << "your turn is finished" << std::endl;
 }
 
@@ -179,10 +179,11 @@ void CatanClient::handle_upgrade_settlement_to_city() {
 		Sleep(100);
 	}
 	if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS))) {
+		m_command_result.pop();
 		std::cout << "could not upgrade the settlement" << std::endl;
 		return;
 	}
-
+	m_command_result.pop();
 	m_resource_cards[ResourceType::STONE]--;
 	m_resource_cards[ResourceType::STONE]--;
 	m_resource_cards[ResourceType::STONE]--;
