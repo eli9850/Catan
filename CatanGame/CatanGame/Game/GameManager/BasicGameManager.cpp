@@ -2,11 +2,13 @@
 #include "Exceptions/GameManagerExceptions.h"
 #include "Exceptions/BoardExceptions.h"
 #include "Utils/StringUtils.h"
+#include "Utils/MapUtils.h"
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <thread>
+#include <random>
 
 BasicGameManager::BasicGameManager(const uint8_t number_of_players, const std::string& port_number):
 	m_server(port_number), m_turn_number(0), m_game_started(false) {
@@ -146,6 +148,8 @@ CommandResult BasicGameManager::handle_command(const uint8_t player_number, cons
 			send_board_to_everyone();
 		}
 		return result;
+	case CommandType::ROLL_DICES:
+		return handle_roll_dices(player_number, parsed_data);
 	default:
 		throw UnknownCommand("This is an unknown command");
 	}
@@ -237,7 +241,7 @@ CommandResult BasicGameManager::handle_upgrade_settlement_to_city(const uint8_t 
 		return CommandResult::INVALID_PLACE;
 	}
 	try {
-		if (static_cast<uint8_t>(m_board.get_node(row_number, column_number)->get_structure()->get_player().get_player_type()) != player_number) {
+		if (static_cast<uint8_t>(m_board.get_node(row_number, column_number)->get_structure()->get_player()) != player_number) {
 			return CommandResult::INVALID_PLACE;
 		}
 		if (m_players[player_number]->get_number_of_resource_cards(ResourceType::STONE) < 3 ||
@@ -254,6 +258,47 @@ CommandResult BasicGameManager::handle_upgrade_settlement_to_city(const uint8_t 
 	} catch (const BoardError&) {
 		return CommandResult::INVALID_PLACE;
 	}
+}
+
+CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, const std::vector<std::string> data) {
+	uint8_t first_dice = 1 + rand() % 6;
+	uint8_t second_dice = 1 + rand() % 6;
+	uint8_t dice_number = first_dice + second_dice;
+
+	if (dice_number == ROBBER_NUMBER) {
+		return handle_robber(player_number, data);
+	}
+
+	std::stringstream data_to_send;
+	data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) << "\n";
+
+	for(const auto& player : m_players) {
+		std::unordered_map<ResourceType, uint8_t> result;
+		auto board_nodes = m_board.get_nodes();
+		for (uint8_t i = 0; i < board_nodes.size(); i++)
+		{
+			for (uint8_t j = 0; j < board_nodes[i].size(); j++)
+			{
+				if (board_nodes[i][j]->get_structure_type() != StructureType::NONE) {
+					if (board_nodes[i][j]->get_structure()->get_player() == player->get_player_type()) {
+						result = get_map_connection(result, board_nodes[i][j]->get_structure()->get_resources(dice_number));
+					}
+				}
+			}
+		}
+		for (const auto& key : result) {
+			data_to_send << std::to_string(static_cast<uint8_t>(key.first)) << "," << std::to_string(key.second) << ";";
+		}
+		data_to_send << "\n";
+	}
+	for (uint8_t i = 0; i < m_players.size(); i++) {
+		m_server.send_data(i, data_to_send.str());
+	}
+	return CommandResult::SUCCESS;
+}
+
+CommandResult BasicGameManager::handle_robber(const uint8_t player_number, const std::vector<std::string> data) {
+	return CommandResult::SUCCESS;
 }
 
 bool BasicGameManager::is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const {
@@ -284,7 +329,7 @@ bool BasicGameManager::is_possible_to_create_edge(const PlayerType player, const
 	auto adjacent_nodes = m_board.get_edge_adjacent_nodes(row_number, col_number);
 	for (auto i = 0; i < adjacent_nodes.size(); i++)
 	{
-		if (adjacent_nodes[i]->get_structure()->get_player().get_player_type() == player) {
+		if (adjacent_nodes[i]->get_structure()->get_player() == player) {
 			return true;
 		}
 

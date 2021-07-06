@@ -36,6 +36,7 @@
     <ClInclude Include="Game\Board\Structures\Settlement.h" />
     <ClInclude Include="Server\Socket.h" />
     <ClInclude Include="Utils\Consts.h" />
+    <ClInclude Include="Utils\MapUtils.h" />
     <ClInclude Include="Utils\StringUtils.h" />
   </ItemGroup>
   <ItemGroup>

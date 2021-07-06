@@ -7,11 +7,11 @@ Player::Player(const PlayerType player_type) : m_player_type(player_type), m_num
 	m_development_cards[DevelopmentCards::POINT_CARD] = 0;
 	m_development_cards[DevelopmentCards::KNIGHT_CARD] = 0;
 
-	m_resource_cards[ResourceType::CLAY] = 0;
-	m_resource_cards[ResourceType::WHEAT] = 0;
-	m_resource_cards[ResourceType::TREE] = 0;
-	m_resource_cards[ResourceType::STONE] = 0;
-	m_resource_cards[ResourceType::SHEEP] = 0;
+	m_resource_cards[ResourceType::CLAY] = 10;
+	m_resource_cards[ResourceType::WHEAT] = 10;
+	m_resource_cards[ResourceType::TREE] = 10;
+	m_resource_cards[ResourceType::STONE] = 10;
+	m_resource_cards[ResourceType::SHEEP] = 10;
 }
 
 void Player::increase_development_card(const DevelopmentCards development_card)
