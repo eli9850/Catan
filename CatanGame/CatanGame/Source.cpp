@@ -57,8 +57,10 @@ int main() {
 	try {
 		BasicGameManager manager(3, "12345");
 		//test(manager);
-		test2(manager);
-		//manager.start_game();		
+		//test2(manager);
+		manager.start_game();
+		//manager.handle_roll_dices(1, {});
+		
 	}
 	catch (const CatanException& e) {
 		std::cout << e.get_message() << std::endl;

@@ -29,6 +29,7 @@ public:
 	void increase_development_card(const DevelopmentCards development_card);
 	void decrease_resource_card(const ResourceType resource_card);
 	void decrease_development_card(const DevelopmentCards development_card);
+	void combine_resources(const std::unordered_map<ResourceType, uint8_t>& resources);
 	PlayerType get_player_type() const;
 	uint32_t get_number_of_points() const;
 	uint8_t get_number_of_resource_cards(const ResourceType resource) const;

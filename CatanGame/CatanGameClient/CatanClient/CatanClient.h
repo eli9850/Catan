@@ -29,11 +29,13 @@ enum class CommandType {
 	SETTLEMENT,
 	CITY,
 	EDGE,
+	ROLL_DICES,
 };
 
 enum class CommandResult {
 	SUCCESS,
 	INFO,
+	NEW_TURN_INFO,
 	YOUR_TURN,
 	NOT_YOUR_TURN,
 	ONLY_SETTLEMENT,
@@ -55,6 +57,8 @@ private:
 	void handle_upgrade_settlement_to_city();
 	void handle_build_edge();
 	void handle_finish_turn();
+	void handle_roll_dices();
+	void add_turn_resources(const std::string& data);
 
 private:
 	std::queue<std::string> m_command_result;

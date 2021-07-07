@@ -68,5 +68,7 @@ private:
 	std::vector<std::shared_ptr<Player>> m_players;
 	BasicBoard m_board;
 	uint8_t m_turn_number;
+	// TODO: check if we already roll the dice, otherwise we can't pass the turn
+	//bool m_rolled_dices;
 };
 

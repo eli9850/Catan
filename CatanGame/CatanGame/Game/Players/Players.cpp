@@ -1,4 +1,5 @@
 #include "Players.h"
+#include "Utils/MapUtils.h"
 
 Player::Player(const PlayerType player_type) : m_player_type(player_type), m_number_of_points(0)
 {
@@ -12,6 +13,10 @@ Player::Player(const PlayerType player_type) : m_player_type(player_type), m_num
 	m_resource_cards[ResourceType::TREE] = 10;
 	m_resource_cards[ResourceType::STONE] = 10;
 	m_resource_cards[ResourceType::SHEEP] = 10;
+}
+
+void Player::combine_resources(const std::unordered_map<ResourceType, uint8_t>& resources) {
+	m_resource_cards = get_combine_maps(m_resource_cards, resources);
 }
 
 void Player::increase_development_card(const DevelopmentCards development_card)

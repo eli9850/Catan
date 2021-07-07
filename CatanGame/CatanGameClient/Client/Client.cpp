@@ -30,7 +30,7 @@ Client::Client(const std::string& ip, const std::string& port_number) {
     try {
         m_socket = std::make_shared<Socket>(result);
     }
-    catch (const SocketError& e) {
+    catch (const SocketError&) {
         freeaddrinfo(result);
         WSACleanup();
         throw InvalidSocket("Invalid socket");

@@ -265,14 +265,17 @@ CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, c
 	uint8_t second_dice = 1 + rand() % 6;
 	uint8_t dice_number = first_dice + second_dice;
 
+	std::cout << "The number of the dices is: " << std::to_string(dice_number) << std::endl;
+
 	if (dice_number == ROBBER_NUMBER) {
 		return handle_robber(player_number, data);
 	}
 
-	std::stringstream data_to_send;
-	data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) << "\n";
-
 	for(const auto& player : m_players) {
+		std::stringstream data_to_send;
+		data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) << "\n";
+		data_to_send << std::to_string(first_dice) << "," << std::to_string(second_dice) << "\n";
+
 		std::unordered_map<ResourceType, uint8_t> result;
 		auto board_nodes = m_board.get_nodes();
 		for (uint8_t i = 0; i < board_nodes.size(); i++)
@@ -281,7 +284,7 @@ CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, c
 			{
 				if (board_nodes[i][j]->get_structure_type() != StructureType::NONE) {
 					if (board_nodes[i][j]->get_structure()->get_player() == player->get_player_type()) {
-						result = get_map_connection(result, board_nodes[i][j]->get_structure()->get_resources(dice_number));
+						result = get_combine_maps(result, board_nodes[i][j]->get_structure()->get_resources(dice_number));
 					}
 				}
 			}
@@ -289,10 +292,8 @@ CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, c
 		for (const auto& key : result) {
 			data_to_send << std::to_string(static_cast<uint8_t>(key.first)) << "," << std::to_string(key.second) << ";";
 		}
-		data_to_send << "\n";
-	}
-	for (uint8_t i = 0; i < m_players.size(); i++) {
-		m_server.send_data(i, data_to_send.str());
+		m_server.send_data(static_cast<uint8_t>(player->get_player_type()), data_to_send.str());
+		m_players[static_cast<uint8_t>(player->get_player_type())]->combine_resources(result);
 	}
 	return CommandResult::SUCCESS;
 }
