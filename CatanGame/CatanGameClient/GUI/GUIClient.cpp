@@ -1,124 +1,244 @@
 #include "GUIClient.h"
 
-GUIClient::GUIClient(HINSTANCE instance): m_instance(instance) {
-   
-    WNDCLASSEX window_class = get_initialized_window_class();
+#include <string_view>
 
-    if (!RegisterClassEx(&window_class))
-    {
-        MessageBox(NULL,
-            L"Call to RegisterClassEx failed!",
-            std::to_wstring(GetLastError()).c_str(),
-            NULL);
+#include "StringUtils/StringUtils.h"
+#include "CatanClient/CatanClient.h"
 
-    }
+constexpr uint32_t NUMBER_OF_TEXTURE_TYPES = 47;
+constexpr uint32_t NUMBER_OF_RESOURCES_IN_BOARD = 19;
+constexpr std::string_view WINDOW_NAME = "Eli's Catan";
 
-    create_main_window();
+constexpr float WINDOW_HIGHT = 600.0f;
+constexpr float WINDOW_WIDTH = 800.0f;
+constexpr float BACKGROUND_WIDTH = 1800.0f;
+constexpr float BACKGROUND_HIGHT = 1581.0f;
+constexpr float RESOURCE_HIGHT = 1074.0f;
+constexpr float RESOURCE_WIDTH = 922.0f;
+constexpr float RESOURCE_HIGHT_IN_BACKGROUND = 309.0f;
+constexpr float RESOURCE_WIDTH_IN_BACKGROUND = 270.0f;
+constexpr float FIRST_POSITION_X = 230.0f;
+constexpr float FIRST_POSITION_Y = 171.0f;
+constexpr float RESOURCE_SCALE_X = WINDOW_WIDTH * RESOURCE_WIDTH_IN_BACKGROUND / BACKGROUND_WIDTH / RESOURCE_WIDTH;
+constexpr float RESOURCE_SCALE_Y = WINDOW_HIGHT * RESOURCE_HIGHT_IN_BACKGROUND / BACKGROUND_HIGHT / RESOURCE_HIGHT;
 
-    //auto a = (HBITMAP)LoadImage(NULL, L"empty_board.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    auto a = (HBITMAP)LoadImage(NULL, IMAGE_PATH.data(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    m_bitmap = a;
-    auto hLogo = CreateWindow(L"Static", NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP, 350, 60, 400, 400, m_hwnd, NULL, NULL, NULL);
-    SendMessage(hLogo, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) m_bitmap);
-
-    ShowWindow(m_hwnd, SW_SHOWNORMAL);
-    UpdateWindow(m_hwnd);
-
-    // Main message loop:
-    MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
+GUIClient::GUIClient():
+    m_textures(NUMBER_OF_TEXTURE_TYPES)
+{
+    m_window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HIGHT), WINDOW_NAME.data());
+    initialize_textures();
+    set_background_image();
 }
 
-WNDCLASSEX GUIClient::get_initialized_window_class() {
+void GUIClient::initialize_textures() {
+    // background
+    m_textures[static_cast<uint32_t>(TextureTypes::BACKGROUND)].loadFromFile("Images/empty_game_board.png");
     
-    WNDCLASSEX windows_class;
+    // resources
+    m_textures[static_cast<uint32_t>(TextureTypes::DESERT)].loadFromFile("Images/resources/desert.png");
+    m_textures[static_cast<uint32_t>(TextureTypes::CLAY)].loadFromFile("Images/resources/clay.png");
+    m_textures[static_cast<uint32_t>(TextureTypes::TREE)].loadFromFile("Images/resources/tree.png");
+    m_textures[static_cast<uint32_t>(TextureTypes::STONE)].loadFromFile("Images/resources/stone.png");
+    m_textures[static_cast<uint32_t>(TextureTypes::WHEAT)].loadFromFile("Images/resources/wheat.png");
+    m_textures[static_cast<uint32_t>(TextureTypes::SHEEP)].loadFromFile("Images/resources/sheep.png");
 
-    windows_class.cbSize = sizeof(WNDCLASSEX);
-    windows_class.style = CS_HREDRAW | CS_VREDRAW;
-    windows_class.lpfnWndProc = wnd_proc;
-    windows_class.cbClsExtra = 0;
-    windows_class.cbWndExtra = 0;
-    windows_class.hInstance = m_instance;
-    windows_class.hIcon = LoadIcon(m_instance, IDI_APPLICATION);
-    windows_class.hCursor = LoadCursor(NULL, IDC_ARROW);
-    windows_class.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    windows_class.lpszMenuName = NULL;
-    windows_class.lpszClassName = APPLICATION_NAME.data();
-    windows_class.hIconSm = LoadIcon(windows_class.hInstance, IDI_APPLICATION);
+    //numbers
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_2)].loadFromFile("Images/numbers/2.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_3)].loadFromFile("Images/numbers/3.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_4)].loadFromFile("Images/numbers/4.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_5)].loadFromFile("Images/numbers/5.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_6)].loadFromFile("Images/numbers/6.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_8)].loadFromFile("Images/numbers/8.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_9)].loadFromFile("Images/numbers/9.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_10)].loadFromFile("Images/numbers/10.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_11)].loadFromFile("Images/numbers/11.tga");
+    m_textures[static_cast<uint32_t>(TextureTypes::NUMBER_12)].loadFromFile("Images/numbers/12.tga");
+    
 
-    return windows_class;
 }
 
-void GUIClient::create_main_window() {
-    // The parameters to CreateWindow explained:
-    // szWindowClass: the name of the application
-    // szTitle: the text that appears in the title bar
-    // WS_OVERLAPPEDWINDOW: the type of window to create
-    // CW_USEDEFAULT, CW_USEDEFAULT: initial position (x, y)
-    // 500, 100: initial size (width, length)
-    // NULL: the parent of this window
-    // NULL: this application does not have a menu bar
-    // hInstance: the first parameter from WinMain
-    // this: pointer to the class object in order to use it in the wndproc function
-    m_hwnd = CreateWindow(
-        APPLICATION_NAME.data(),
-        APPLICATION_NAME.data(),
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        1000, 600,
-        NULL,
-        NULL,
-        m_instance,
-        this
-    );
+void GUIClient::set_background_image() {
+    m_background.setTexture(m_textures.at(static_cast<uint32_t>(TextureTypes::BACKGROUND)));
+    m_background.setPosition(sf::Vector2f(0.0f, 0.0f));
 
-    if (!m_hwnd)
-    {
-        MessageBox(NULL,
-            L"Call to CreateWindow failed!",
-            std::to_wstring(GetLastError()).c_str(),
-            NULL);
-        return;
-
-    }
+    m_background.setScale(get_background_image_scale(m_textures.at(static_cast<uint32_t>(TextureTypes::BACKGROUND))));
 }
 
-LRESULT GUIClient::wnd_proc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+sf::Vector2f GUIClient::get_background_image_scale(const sf::Texture& background) const {
 
-    GUIClient* pThis;
+    float x;
+    float y;
 
-    if (message == WM_NCCREATE)
-    {
-        pThis = static_cast<GUIClient*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
+    x = static_cast<float>(m_window.getSize().x);
+    x /= background.getSize().x;
 
-        SetLastError(0);
-        if (!SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pThis)))
-        {
-            if (GetLastError() != 0)
-                return FALSE;
+    y = static_cast<float>(m_window.getSize().y);
+    y /= background.getSize().y;
+
+    return sf::Vector2f(x, y);
+}
+
+void GUIClient::create_board(const std::string& board_data) {
+
+    auto all_data = split(board_data, "\n");
+    initialize_board_resources(all_data[0]);
+}
+
+void GUIClient::initialize_board_resources(const std::string& resources_data) {
+
+    bool pos[] = {
+        0, 0, 1, 1, 1,
+        0, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 0,
+        1, 1, 1, 0, 0
+    };
+
+    m_board_resources.resize(NUMBER_OF_RESOURCES_IN_BOARD);
+    m_board_resources_numbers.resize(NUMBER_OF_RESOURCES_IN_BOARD);
+    uint32_t current_pos = 0;
+    uint32_t current_resource = 0;
+    for (auto resource_data : split(resources_data, ";")) {
+        auto resource_type = static_cast<ResourceType>(atoi(split(resource_data, ",")[0].c_str()));
+        uint32_t resource_number = atoi(split(resource_data, ",")[1].c_str());
+        if (pos[current_pos]) {
+            uint32_t i = current_pos / 5;
+            uint32_t j = current_pos % 5;
+            initialize_resource_type(current_resource, j, i, resource_type);
+            initialize_resource_number(current_resource, j, i, resource_number);
+            current_resource++;
         }
+        current_pos++;
     }
-    else
-    {
-        pThis = reinterpret_cast<GUIClient*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));       
-    }
-
-    if (pThis)
-    {
-        switch (message)
-        {
-        case WM_CLOSE:
-            PostQuitMessage(0);
-            break;
-        default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
-        }
-    }
-
-    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+void GUIClient::initialize_resource_type(uint32_t resource_index, uint32_t x, uint32_t y, ResourceType resource_type) {
+    switch (resource_type)
+    {
+    case ResourceType::CLAY:
+        initialize_resource_type_sprite(resource_index, x, y, TextureTypes::CLAY);
+        break;
+    case ResourceType::SHEEP:
+        initialize_resource_type_sprite(resource_index, x, y, TextureTypes::SHEEP);
+        break;
+    case ResourceType::WHEAT:
+        initialize_resource_type_sprite(resource_index, x, y, TextureTypes::WHEAT);
+        break;
+    case ResourceType::NONE:
+        initialize_resource_type_sprite(resource_index, x, y, TextureTypes::DESERT);
+        break;
+    case ResourceType::STONE:
+        initialize_resource_type_sprite(resource_index, x, y, TextureTypes::STONE);
+        break;
+    case ResourceType::TREE:
+        initialize_resource_type_sprite(resource_index, x, y, TextureTypes::TREE);
+        break;
+    default:
+        break;
+    }
+}
+
+void GUIClient::initialize_resource_type_sprite(uint32_t resource_index, uint32_t x, uint32_t y, TextureTypes resource_type) {
+    m_board_resources[resource_index].setTexture(m_textures[static_cast<uint32_t>(resource_type)]);
+
+    m_board_resources[resource_index].setScale(RESOURCE_SCALE_X, RESOURCE_SCALE_Y);
+
+    auto size_of_resource_x = WINDOW_WIDTH * RESOURCE_WIDTH_IN_BACKGROUND / BACKGROUND_WIDTH;
+    auto size_of_resource_y = WINDOW_HIGHT * RESOURCE_HIGHT_IN_BACKGROUND / BACKGROUND_HIGHT;
+
+    float first_position_in_board_x = FIRST_POSITION_X * WINDOW_WIDTH / BACKGROUND_WIDTH;
+    float first_position_in_board_y = FIRST_POSITION_Y * WINDOW_HIGHT / BACKGROUND_HIGHT;
+
+    auto x1 = first_position_in_board_x + (x - 1.0f + 0.5f * y) * size_of_resource_x;
+    auto y1 = first_position_in_board_y + y * size_of_resource_y * 0.757f;
+
+    m_board_resources[resource_index].setPosition(x1, y1);
+}
+
+void GUIClient::initialize_resource_number(uint32_t resource_index, uint32_t x, uint32_t y, uint32_t resource_number) {
+    switch (resource_number)
+    {
+    case 0:
+        break;
+    case 2:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_2);
+        break;
+    case 3:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_3);
+        break;
+    case 4:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_4);
+        break;
+    case 5:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_5);
+        break;
+    case 6:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_6);
+        break;
+    case 8:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_8);
+        break;
+    case 9:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_9);
+        break;
+    case 10:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_10);
+        break;
+    case 11:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_11);
+        break;
+    case 12:
+        initialize_resource_number_sprite(resource_index, x, y, TextureTypes::NUMBER_12);
+        break;
+    default:
+        break;
+    }
+}
+
+void GUIClient::initialize_resource_number_sprite(uint32_t resource_index, uint32_t x, uint32_t y, TextureTypes resource_number) {
+    m_board_resources_numbers[resource_index].setTexture(m_textures[static_cast<uint32_t>(resource_number)]);
+
+    m_board_resources_numbers[resource_index].setScale(RESOURCE_SCALE_X, RESOURCE_SCALE_Y);
+
+    auto size_of_resource_x = WINDOW_WIDTH * RESOURCE_WIDTH_IN_BACKGROUND / BACKGROUND_WIDTH;
+    auto size_of_resource_y = WINDOW_HIGHT * RESOURCE_HIGHT_IN_BACKGROUND / BACKGROUND_HIGHT;
+
+    float first_position_in_board_x = FIRST_POSITION_X * WINDOW_WIDTH / BACKGROUND_WIDTH;
+    float first_position_in_board_y = FIRST_POSITION_Y * WINDOW_HIGHT / BACKGROUND_HIGHT;
+
+    auto x1 = first_position_in_board_x + (x - 1.0f + 0.5f * y) * size_of_resource_x;
+    auto y1 = first_position_in_board_y + y * size_of_resource_y * 0.757f;
+
+    m_board_resources_numbers[resource_index].setPosition(x1, y1);
+}
+
+void GUIClient::render_loop() {
+    
+    while (m_window.isOpen())
+    {
+        sf::Event event;
+        while (m_window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                m_window.close();
+
+        }
+
+        m_window.clear(sf::Color::Green);
+        m_window.draw(m_background);
+        for (size_t i = 0; i < m_board_resources.size(); i++) {
+            m_window.draw(m_board_resources[i]);
+        }
+        for (size_t i = 0; i < m_board_resources_numbers.size(); i++) {
+            m_window.draw(m_board_resources_numbers[i]);
+        }
+        m_window.display();
+    }
+}
+
+void GUIClient::start_game() {
+    render_loop();
+}
+
+GUIClient::~GUIClient(){
+}

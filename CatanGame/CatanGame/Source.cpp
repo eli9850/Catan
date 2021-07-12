@@ -55,7 +55,7 @@ void test2(BasicGameManager& manager) {
 
 int main() {
 	try {
-		BasicGameManager manager(3, "12345");
+		BasicGameManager manager(1, "12345");
 		//test(manager);
 		//test2(manager);
 		manager.start_game();

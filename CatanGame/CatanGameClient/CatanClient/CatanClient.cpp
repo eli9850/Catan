@@ -2,9 +2,12 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
+
 #include "StringUtils/StringUtils.h"
 
-CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) : m_client(ip, port_nubmer) {
+CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) : m_client(ip, port_nubmer),
+m_gui_client()
+{
 	m_number_of_points = 0;
 	m_game_is_finished = false;
 	m_development_cards[DevelopmentCards::ABUNDANCE_CARD] = 0;
@@ -20,8 +23,19 @@ CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) 
 }
 
 void CatanClient::start_game() {
-
+	
+	std::string data;
+	data = m_client.recive_data();
+	auto parsed_data = split(data, "\n");
+	std::cout << "Got result: " << parsed_data[0] << std::endl;
+	std::string board = data.substr(2, data.size() - 2);
+	std::cout << "The board is:\n" << data.substr(2, data.size() - 2) << "\n";
+	m_gui_client.create_board(board);
+	
+	sf::Context context;
+	std::thread gui(&CatanClient::create_gui, this);
 	std::thread recived_thread(&CatanClient::recive_from_server, this);
+
 	uint8_t choise = 0;
 	while (!m_game_is_finished) {
 		std::cout << "enter what you want to do:" << std::endl;
@@ -60,6 +74,7 @@ void CatanClient::start_game() {
 			continue;
 		}
 	}
+	gui.join();
 	recived_thread.join();
 }
 
@@ -82,6 +97,11 @@ void CatanClient::recive_from_server() {
 			m_command_result.push(data);
 		}
 	}
+}
+
+void CatanClient::create_gui() {
+	sf::Context context;
+	m_gui_client.start_game();
 }
 
 void CatanClient::add_turn_resources(const std::string& data) {

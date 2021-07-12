@@ -14,7 +14,7 @@ BasicGameManager::BasicGameManager(const uint8_t number_of_players, const std::s
 	m_server(port_number), m_turn_number(0), m_game_started(false) {
 
 	if (number_of_players < MIN_PLAYER_NUMBER || number_of_players > MAX_PLAYER_NUMBER) {
-		throw InvalidPlayersNumber("You enter invalid number of players");
+		//throw InvalidPlayersNumber("You enter invalid number of players");
 	}
 	m_players.resize(number_of_players);
 	for (auto  i = 0; i < number_of_players; i++) {
@@ -34,6 +34,7 @@ void BasicGameManager::connect_players_and_start() {
 		m_server.accept_client();	
 	}
 	std::cout << "all players connected" << std::endl;
+	send_board_to_everyone();
 	for (uint8_t i = 0; i < m_players.size(); i++) {
 		std::thread temp(&BasicGameManager::handle_player ,this, i);
 		players_threads.push_back(std::move(temp));

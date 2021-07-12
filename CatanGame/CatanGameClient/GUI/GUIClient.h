@@ -1,152 +1,94 @@
 #pragma once
 
-#include <windows.h>
-#include <string>
-#include <string_view>
+#include <SFML/Graphics.hpp>
 
-constexpr std::wstring_view APPLICATION_NAME = L"ELI'S CATAN";
-constexpr std::wstring_view IMAGE_PATH = L"C:\\Users\\eli9850\\Documents\\works\\projetcs\\Catan\\CatanGame\\CatanGameClient\\Resources\\empty_board.bmp";
+enum class ResourceType;
+
+#include <vector>
+#include <string>
+
+enum class TextureTypes {
+    BACKGROUND = 0,
+
+    NUMBER_2,
+    NUMBER_3,
+    NUMBER_4,
+    NUMBER_5,
+    NUMBER_6,
+    NUMBER_8,
+    NUMBER_9,
+    NUMBER_10,
+    NUMBER_11,
+    NUMBER_12,
+
+    SHEEP,
+    CLAY,
+    DESERT,
+    WHEAT,
+    STONE,
+    TREE,
+
+    DICE_1,
+    DICE_2,
+    DICE_3,
+    DICE_4,
+    DICE_5,
+    DICE_6,
+
+    SHEEP_RESOURCE,
+    CLAY_RESOURCE,
+    DESERT_RESOURCE,
+    WHEAT_RESOURCE,
+    STONE_RESOURCE,
+    TREE_RESOURCE,
+
+    KNIHT_CARD,
+    MONIPOLY_CARD,
+    PLANTY_YEAR_CARD,
+    ROAD_CARD,
+    POINT_CARD,
+
+    EDGE_RED,
+    SETTLEMENT_RED,
+    CITY_RED,
+    EDGE_GREEN,
+    SETTLEMENT_GREEN,
+    CITY_GREEN,
+    EDGE_YELLOW,
+    SETTLEMENT_YELLOW,
+    CITY_YELLOW,
+    EDGE_BLUE,
+    SETTLEMENT_BLUE,
+    CITY_BLUE,
+
+    ROBBER,
+};
+
 class GUIClient
 {
 public:
-    GUIClient(HINSTANCE instance);
-
-
-private:
-    static LRESULT CALLBACK wnd_proc(HWND, UINT, WPARAM, LPARAM);
-    WNDCLASSEX get_initialized_window_class();
-    void create_main_window();
+    GUIClient();
+    ~GUIClient();
+    
+    void start_game();
+    void create_board(const std::string& board_data);
 
 private:
-    HINSTANCE m_instance;
-    HWND m_hwnd;
-    HBITMAP m_bitmap;
+    void initialize_textures();
+    void set_background_image();
+    sf::Vector2f get_background_image_scale(const sf::Texture& background) const;
+    void render_loop();
 
+    void initialize_board_resources(const std::string& resources_data);
+    void initialize_resource_type(uint32_t resource_index, uint32_t x, uint32_t y, ResourceType resource_type);
+    void initialize_resource_type_sprite(uint32_t resource_index, uint32_t x, uint32_t y, TextureTypes resource_type);
+    void initialize_resource_number(uint32_t resource_index, uint32_t x, uint32_t y, uint32_t resource_number);
+    void initialize_resource_number_sprite(uint32_t resource_index, uint32_t x, uint32_t y, TextureTypes resource_number);
+
+private:
+    sf::RenderWindow m_window;
+    std::vector<sf::Texture> m_textures;
+    sf::Sprite m_background;
+    std::vector<sf::Sprite> m_board_resources;   
+    std::vector<sf::Sprite> m_board_resources_numbers;
 };
-/*
-
-// Forward declarations of functions included in this code module:
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
-int CALLBACK WinMain(
-    _In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPSTR     lpCmdLine,
-    _In_ int       nCmdShow
-)
-{
-    WNDCLASSEX wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
-    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
-
-    if (!RegisterClassEx(&wcex))
-    {
-        MessageBox(NULL,
-            _T("Call to RegisterClassEx failed!"),
-            _T("Windows Desktop Guided Tour"),
-            NULL);
-
-        return 1;
-    }
-
-    // Store instance handle in our global variable
-    hInst = hInstance;
-
-    // The parameters to CreateWindow explained:
-    // szWindowClass: the name of the application
-    // szTitle: the text that appears in the title bar
-    // WS_OVERLAPPEDWINDOW: the type of window to create
-    // CW_USEDEFAULT, CW_USEDEFAULT: initial position (x, y)
-    // 500, 100: initial size (width, length)
-    // NULL: the parent of this window
-    // NULL: this application does not have a menu bar
-    // hInstance: the first parameter from WinMain
-    // NULL: not used in this application
-    HWND hWnd = CreateWindow(
-        szWindowClass,
-        szTitle,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        500, 100,
-        NULL,
-        NULL,
-        hInstance,
-        NULL
-    );
-
-    if (!hWnd)
-    {
-        MessageBox(NULL,
-            _T("Call to CreateWindow failed!"),
-            _T("Windows Desktop Guided Tour"),
-            NULL);
-
-        return 1;
-    }
-
-    // The parameters to ShowWindow explained:
-    // hWnd: the value returned from CreateWindow
-    // nCmdShow: the fourth parameter from WinMain
-    ShowWindow(hWnd,
-        nCmdShow);
-    UpdateWindow(hWnd);
-
-    // Main message loop:
-    MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    return (int)msg.wParam;
-}
-
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE:  Processes messages for the main window.
-//
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    PAINTSTRUCT ps;
-    HDC hdc;
-    TCHAR greeting[] = _T("Hello, Windows desktop!");
-
-    switch (message)
-    {
-    case WM_PAINT:
-        hdc = BeginPaint(hWnd, &ps);
-
-        // Here your application is laid out.
-        // For this introduction, we just print out "Hello, Windows desktop!"
-        // in the top left corner.
-        TextOut(hdc,
-            5, 5,
-            greeting, _tcslen(greeting));
-        // End application-specific layout section.
-
-        EndPaint(hWnd, &ps);
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-        break;
-    }
-
-    return 0;
-}*/

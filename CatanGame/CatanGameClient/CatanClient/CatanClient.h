@@ -1,6 +1,8 @@
 #pragma once
 
+#include "GUI/GUIClient.h"
 #include "Client/Client.h"
+
 #include <string>
 #include <unordered_map>
 #include <queue>
@@ -53,6 +55,7 @@ public:
 
 private:
 	void recive_from_server();
+	void create_gui();
 	void handle_build_settlement();
 	void handle_upgrade_settlement_to_city();
 	void handle_build_edge();
@@ -66,6 +69,8 @@ private:
 	std::unordered_map<ResourceType, uint8_t> m_resource_cards;
 	uint32_t m_number_of_points;
 	Client m_client;
+	GUIClient m_gui_client;
 	bool m_game_is_finished;
+
 };
 
