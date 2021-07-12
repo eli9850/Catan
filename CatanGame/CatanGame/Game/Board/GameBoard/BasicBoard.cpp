@@ -28,7 +28,7 @@ std::string BasicBoard::to_string() const
 			}
 			else {
 				to_string << std::to_string(static_cast<uint8_t>(m_nodes[i][j]->get_structure_type())) << "," <<
-					std::to_string(static_cast<uint8_t>(m_nodes[i][j]->get_structure()->get_player().get_player_type()))
+					std::to_string(static_cast<uint8_t>(m_nodes[i][j]->get_structure()->get_player()))
 					<< ";";
 			}
 
@@ -125,7 +125,9 @@ void BasicBoard::create_settlement(const uint8_t node_row, const uint8_t node_co
 	if (!is_valid_node_index(node_row, node_col)) {
 		throw InvalidNodeIndex("The index of the node is invalid");
 	}
-	m_nodes[node_row][node_col]->set_structure(std::make_unique<Settlement>(player_type));
+	m_nodes[node_row][node_col]->set_structure(std::make_unique<Settlement>(
+		player_type,
+		get_node_adjacent_resources(node_row, node_col)));
 	m_nodes[node_row][node_col]->set_structure_type(StructureType::SETTLEMENT);
 }
 
@@ -134,7 +136,9 @@ void BasicBoard::upgrade_settlement_to_city(const uint8_t node_row, const uint8_
 	if (structure->get_structure_type() != StructureType::SETTLEMENT) {
 		throw NotSettelemnt("You are trying to create city without settlement");
 	}
-	m_nodes[node_row][node_col]->set_structure(std::make_unique<City>(structure->get_structure()->get_player().get_player_type()));
+	m_nodes[node_row][node_col]->set_structure(std::make_unique<City>(
+		structure->get_structure()->get_player(),
+		get_node_adjacent_resources(node_row, node_col)));
 	m_nodes[node_row][node_col]->set_structure_type(StructureType::CITY);
 	
 }
@@ -536,4 +540,63 @@ std::vector<std::shared_ptr<Node>> BasicBoard::get_node_adjacent_nodes(const uin
 	}
 	
 	return adjacent_nodes;
+}
+
+std::vector<std::shared_ptr<Resource>> BasicBoard::get_node_adjacent_resources(const uint8_t row_number, const uint8_t col_number) const {
+	std::vector<std::shared_ptr<Resource>> adjacent_resources;
+	if (row_number == 0) {
+		try {
+			adjacent_resources.push_back(get_resource(row_number, col_number / 2));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}
+		if (col_number % 2 == 0) {
+			try {
+				adjacent_resources.push_back(get_resource(row_number, col_number / 2 - 1));
+			}
+			catch (...) {
+				// out of index, not relevant
+			}
+		}
+	}
+	else if (col_number % 2 == 0) {
+		try {
+			adjacent_resources.push_back(get_resource(row_number - 1, col_number / 2 - 1));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}
+		try {
+			adjacent_resources.push_back(get_resource(row_number - 1, col_number / 2));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}try {
+			adjacent_resources.push_back(get_resource(row_number, col_number / 2 - 1));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}
+	}
+	else if (col_number % 2 == 1) {
+		try {
+			adjacent_resources.push_back(get_resource(row_number - 1, col_number / 2 - 1));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}
+		try {
+			adjacent_resources.push_back(get_resource(row_number, col_number / 2));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}try {
+			adjacent_resources.push_back(get_resource(row_number, col_number / 2 - 1));
+		}
+		catch (...) {
+			// out of index, not relevant
+		}
+	}
+	return adjacent_resources;
 }

@@ -38,6 +38,10 @@ public:
 	std::vector<std::shared_ptr<Node>> get_edge_adjacent_nodes(const uint8_t row_number, const uint8_t col_number) const;
 	std::vector<std::shared_ptr<Edge>> get_node_adjacent_edges(const uint8_t row_number, const uint8_t col_number) const;
 	std::vector<std::shared_ptr<Node>> get_node_adjacent_nodes(const uint8_t row_number, const uint8_t col_number) const;
+	std::vector<std::shared_ptr<Resource>> get_node_adjacent_resources(const uint8_t row_number, const uint8_t col_number) const;
+	const std::array<std::array<std::shared_ptr<Node>, NUMBER_OF_NODES_IN_ROW>, NUMBER_OF_NODES_IN_COLUMN>& get_nodes() const {
+		return m_nodes;
+	}
 
 private:
 	bool is_valid_resource_index(const uint8_t resource_row, const uint8_t resource_col) const;
