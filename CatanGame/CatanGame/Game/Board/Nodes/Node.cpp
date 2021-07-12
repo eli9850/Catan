@@ -9,7 +9,7 @@ void Node::set_structure(std::unique_ptr<IStructure> structure)
 	m_structure = std::move(structure);
 }
 
-std::unique_ptr<IStructure>& Node::get_structure()
+const std::unique_ptr<IStructure>& Node::get_structure()
 {
 	return m_structure;
 }

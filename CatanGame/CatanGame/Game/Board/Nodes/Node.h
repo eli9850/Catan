@@ -16,7 +16,7 @@ class Node final
 public:
 	explicit Node();
 	void set_structure(std::unique_ptr<IStructure> strucure);
-	std::unique_ptr<IStructure>& get_structure();
+	const std::unique_ptr<IStructure>& get_structure();
 	void set_structure_type(const StructureType structure_type);
 	StructureType get_structure_type() const;
 

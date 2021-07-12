@@ -8,19 +8,22 @@
 #include "Server/Server.h"
 #include "Game/Players/Players.h"
 
-constexpr int MIN_PLAYER_NUMBER = 3;
-constexpr int MAX_PLAYER_NUMBER = 4;
+constexpr uint8_t MIN_PLAYER_NUMBER = 3;
+constexpr uint8_t MAX_PLAYER_NUMBER = 4;
+constexpr uint8_t ROBBER_NUMBER = 7;
 
 enum class CommandType {
 	FINISH_TURN,
 	SETTLEMENT,
 	CITY,
 	EDGE,
+	ROLL_DICES,
 };
 
 enum class CommandResult {
 	SUCCESS,
 	INFO,
+	NEW_TURN_INFO,
 	YOUR_TURN,
 	NOT_YOUR_TURN,
 	ONLY_SETTLEMENT,
@@ -48,7 +51,8 @@ public:
 	CommandResult handle_create_edge(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_create_settlement(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_upgrade_settlement_to_city(const uint8_t player_number, const std::vector<std::string> data);
-	
+	CommandResult handle_roll_dices(const uint8_t player_number, const std::vector<std::string> data);
+	CommandResult handle_robber(const uint8_t player_number, const std::vector<std::string> data);
 	
 	// functions for help
 	bool is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;
@@ -64,5 +68,7 @@ private:
 	std::vector<std::shared_ptr<Player>> m_players;
 	BasicBoard m_board;
 	uint8_t m_turn_number;
+	// TODO: check if we already roll the dice, otherwise we can't pass the turn
+	//bool m_rolled_dices;
 };
 
