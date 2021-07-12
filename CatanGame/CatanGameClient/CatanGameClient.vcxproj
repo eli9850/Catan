@@ -158,6 +158,7 @@
     <ClCompile Include="CatanClient\CatanClient.cpp" />
     <ClCompile Include="Client\Client.cpp" />
     <ClCompile Include="Client\Socket.cpp" />
+    <ClCompile Include="GUI\GUIClient.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="StringUtils\StringUtils.cpp" />
   </ItemGroup>
@@ -165,6 +166,7 @@
     <ClInclude Include="CatanClient\CatanClient.h" />
     <ClInclude Include="Client\Client.h" />
     <ClInclude Include="Client\Socket.h" />
+    <ClInclude Include="GUI\GUIClient.h" />
     <ClInclude Include="StringUtils\StringUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
