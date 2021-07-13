@@ -7,12 +7,12 @@ constexpr int MAX_RESOURCE_NUMBER = 12;
 
 enum class ResourceType
 {
-	NONE,
 	WHEAT,
 	CLAY,
 	SHEEP,
 	TREE,
-	STONE
+	STONE,
+	NONE,
 };
 
 class Resource final

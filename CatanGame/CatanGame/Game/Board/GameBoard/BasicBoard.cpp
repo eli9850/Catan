@@ -100,7 +100,7 @@ void BasicBoard::create_board()
 	}
 }
 
-void BasicBoard::set_robber_number(const std::pair<uint8_t, uint8_t> resource_number)
+void BasicBoard::set_robber_number(const std::pair<uint32_t, uint32_t> resource_number)
 {
 	if (!is_valid_resource_index(resource_number.first, resource_number.second)) {
 		throw InvalidNodeIndex("You are trying to put the robber in an invalid node");
@@ -118,12 +118,18 @@ void BasicBoard::create_edge(const uint8_t edge_row, const uint8_t edge_col, con
 	if (edge_row % 2 == 1 && edge_col % 2 == 1) {
 		throw InvalidEdgeIndex("The index of the edge is invalid");
 	}
+	if (m_edges[edge_row][edge_col] != nullptr) {
+		throw InvalidEdgeIndex("There is already an existing edge in that place");
+	}
 	m_edges[edge_row][edge_col] = std::make_shared<Edge>(player_type);
 }
 
 void BasicBoard::create_settlement(const uint8_t node_row, const uint8_t node_col, const PlayerType player_type) {
 	if (!is_valid_node_index(node_row, node_col)) {
 		throw InvalidNodeIndex("The index of the node is invalid");
+	}
+	if (m_nodes[node_row][node_col]->get_structure_type() != StructureType::NONE) {
+		throw InvalidNodeIndex("There is already an existing structure in that place");
 	}
 	m_nodes[node_row][node_col]->set_structure(std::make_unique<Settlement>(
 		player_type,

@@ -30,7 +30,7 @@ public:
 	void create_settlement(const uint8_t node_row, const uint8_t node_col, const PlayerType player_type);
 	void upgrade_settlement_to_city(const uint8_t node_row, const uint8_t node_col);
 	void create_edge(const uint8_t edge_row, const uint8_t edge_col, const PlayerType player_type);
-	void set_robber_number(const std::pair<uint8_t, uint8_t> resource_number);
+	void set_robber_number(const std::pair<uint32_t, uint32_t> resource_number);
 	std::shared_ptr<Resource> get_resource(const uint8_t row_number, const uint8_t col_number) const;
 	std::shared_ptr<Edge> get_edge(const uint8_t row_number, const uint8_t col_number) const;
 	std::shared_ptr<Node> get_node(const uint8_t row_number, const uint8_t col_number) const;
@@ -50,7 +50,7 @@ private:
 
 	// This private section is for member of the board class
 private:
-	std::pair<uint8_t, uint8_t> m_robber_resource_number;
+	std::pair<uint32_t, uint32_t> m_robber_resource_number;
 	std::array<std::array<std::shared_ptr<Edge>, NUMBER_OF_EDGES_IN_ROW>, NUMBER_OF_EDGES_IN_COLUMN> m_edges;
 	std::array<std::array<std::shared_ptr<Node>, NUMBER_OF_NODES_IN_ROW>, NUMBER_OF_NODES_IN_COLUMN> m_nodes;
 	std::array<std::array<std::shared_ptr<Resource>, NUMBER_OF_RESOURCES_IN_ROW>, NUMBER_OF_RESOURCES_IN_COLUMN> m_resources;

@@ -7,12 +7,12 @@
 
 enum class ResourceType
 {
-	NONE,
 	WHEAT,
 	CLAY,
 	SHEEP,
 	TREE,
-	STONE
+	STONE,
+	NONE
 };
 
 enum class DevelopmentCards
@@ -22,6 +22,20 @@ enum class DevelopmentCards
 	ROAD_CARD,
 	POINT_CARD,
 	MONOPOL_CARD,
+};
+
+enum class PlayerType
+{
+	BLUE,
+	YELLOW,
+	GREEN,
+	RED,
+};
+
+enum class StructureType {
+	NONE,
+	SETTLEMENT,
+	CITY
 };
 
 enum class CommandType {
@@ -63,7 +77,7 @@ private:
 private:
 	std::queue<std::string> m_command_result;
 	std::unordered_map<DevelopmentCards, uint8_t> m_development_cards;
-	std::unordered_map<ResourceType, uint8_t> m_resource_cards;
+	std::unordered_map<ResourceType, uint32_t> m_resource_cards;
 	uint32_t m_number_of_points;
 	Client m_client;
 	bool m_game_is_finished;

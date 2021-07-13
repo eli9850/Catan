@@ -1,5 +1,6 @@
 .vs/
 Debug/
 Release/
+Temp/
 *.filters
 *.user
