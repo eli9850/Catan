@@ -17,7 +17,7 @@ enum class PlayerType
 {
 	BLUE,
 	YELLOW,
-	WHITE,
+	GREEN,
 	RED,
 };
 
