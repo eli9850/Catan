@@ -9,10 +9,6 @@ Resource::Resource(const ResourceType resource_type, const uint32_t resource_num
 	{
 		throw WrongResourceNumber("The number is invalid");
 	}
-	if (m_resource_type < ResourceType::NONE || m_resource_type > ResourceType::STONE)
-	{
-		throw ResourceDoesNotExists("The resource is invalid");
-	}
 }
 
 ResourceType Resource::get_resource_type() const

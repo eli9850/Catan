@@ -58,7 +58,8 @@ void Server::accept_client() {
 
 std::string Server::recive_data(const uint8_t client) const {
 	char recived_data[1024] = { "0" };
-	if (recv(m_clients_sockets[client].get(), recived_data, 1024, 0) <= 0) {
+	if (recv(m_clients_sockets.at(client).get(), recived_data, 1024, 0) <= 0) {
+		std:: cout << "Could not recive the data with error: " + std::to_string(WSAGetLastError()) << std::endl;
 		throw ReciveError("Could not recive the data with error: " + std::to_string(WSAGetLastError()));
 	}
 	return recived_data;
@@ -66,7 +67,7 @@ std::string Server::recive_data(const uint8_t client) const {
 
 void Server::send_data(const uint8_t client, const std::string& send_data) const {
 
-	if (send(m_clients_sockets[client].get(), send_data.c_str(), send_data.size(), 0) != send_data.size()) {
+	if (send(m_clients_sockets.at(client).get(), send_data.c_str(), send_data.size(), 0) != send_data.size()) {
 		throw SendError("Could not recive the data with error: " + std::to_string(WSAGetLastError()));
 	}
 }

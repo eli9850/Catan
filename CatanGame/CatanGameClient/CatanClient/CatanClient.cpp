@@ -8,21 +8,62 @@
 CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) : m_client(ip, port_nubmer) {
 	m_number_of_points = 0;
 	m_game_is_finished = false;
-	m_development_cards[DevelopmentCards::ABUNDANCE_CARD] = 0;
-	m_development_cards[DevelopmentCards::ROAD_CARD] = 0;
-	m_development_cards[DevelopmentCards::POINT_CARD] = 0;
-	m_development_cards[DevelopmentCards::KNIGHT_CARD] = 0;
+	m_development_cards.try_emplace(DevelopmentCards::ABUNDANCE_CARD, 0);
+	m_development_cards.try_emplace(DevelopmentCards::ROAD_CARD, 0);
+	m_development_cards.try_emplace(DevelopmentCards::POINT_CARD, 0);
+	m_development_cards.try_emplace(DevelopmentCards::KNIGHT_CARD, 0);
 
-	m_resource_cards[ResourceType::CLAY] = 10;
-	m_resource_cards[ResourceType::WHEAT] = 10;
-	m_resource_cards[ResourceType::TREE] = 10;
-	m_resource_cards[ResourceType::STONE] = 10;
-	m_resource_cards[ResourceType::SHEEP] = 10;
+	m_resource_cards.try_emplace(ResourceType::CLAY, 4);
+	m_resource_cards.try_emplace(ResourceType::WHEAT, 2);
+	m_resource_cards.try_emplace(ResourceType::TREE, 4);
+	m_resource_cards.try_emplace(ResourceType::STONE, 0);
+	m_resource_cards.try_emplace(ResourceType::SHEEP, 2);
 }
 
 void CatanClient::start_game() {
-
+	
+	std::string data;
+	data = m_client.recive_data();
+	auto parsed_data = split(data, "\n");
+	std::cout << "Got result: " << parsed_data.at(0) << std::endl;
+	std::string board = data.substr(2, data.size() - 2);
+	std::cout << "The board is:\n" << data.substr(2, data.size() - 2) << "\n";
+	
+	m_gui_client.create_catan_board(data.substr(2, data.size() - 2));
+	
+	std::thread player_func(&CatanClient::handle_player, this);
 	std::thread recived_thread(&CatanClient::recive_from_server, this);
+
+	m_gui_client.start_game();
+
+	player_func.join();
+	recived_thread.join();
+}
+
+void CatanClient::recive_from_server() {
+	std::string data;
+	while (true) {
+		data = "";
+		data = m_client.recive_data();
+		auto parsed_data = split(data, "\n");
+		std::cout << "Got result: " << parsed_data.at(0) << std::endl;
+		if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::INFO)) {
+			std::cout << "The board is:\n" << data.substr(2, data.size() - 2) << "\n";
+			m_gui_client.update_board(data.substr(2, data.size() - 2));
+		}
+		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::YOUR_TURN)) {
+			std::cout << "The turn is yours\n";
+		}
+		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) {
+			update_new_turn_info(data);
+		}
+		else {
+			m_command_result.push(data);
+		}
+	}
+}
+
+void CatanClient::handle_player() {
 	uint8_t choise = 0;
 	while (!m_game_is_finished) {
 		std::cout << "enter what you want to do:" << std::endl;
@@ -51,62 +92,42 @@ void CatanClient::start_game() {
 			handle_roll_dices();
 			continue;
 		case '6':
-			std::cout << "Tree: " << std::to_string(m_resource_cards[ResourceType::TREE]) << std::endl;
-			std::cout << "Sheep: " << std::to_string(m_resource_cards[ResourceType::SHEEP]) << std::endl;
-			std::cout << "Stone: " << std::to_string(m_resource_cards[ResourceType::STONE]) << std::endl;
-			std::cout << "Wheat: " << std::to_string(m_resource_cards[ResourceType::WHEAT]) << std::endl;
-			std::cout << "Clay: " << std::to_string(m_resource_cards[ResourceType::CLAY]) << std::endl;
+			std::cout << "Tree: " << std::to_string(m_resource_cards.at(ResourceType::TREE)) << std::endl;
+			std::cout << "Sheep: " << std::to_string(m_resource_cards.at(ResourceType::SHEEP)) << std::endl;
+			std::cout << "Stone: " << std::to_string(m_resource_cards.at(ResourceType::STONE)) << std::endl;
+			std::cout << "Wheat: " << std::to_string(m_resource_cards.at(ResourceType::WHEAT)) << std::endl;
+			std::cout << "Clay: " << std::to_string(m_resource_cards.at(ResourceType::CLAY)) << std::endl;
 			continue;
 		default:
 			continue;
 		}
 	}
-	recived_thread.join();
 }
 
-void CatanClient::recive_from_server() {
-	std::string data;
-	while (true) {
-		data = m_client.recive_data();
-		auto parsed_data = split(data, "\n");
-		std::cout << "Got result: " << parsed_data[0] << std::endl;
-		if (stoi(parsed_data[0]) == static_cast<uint8_t>(CommandResult::INFO)) {
-			std::cout << "The board is:\n" << data.substr(2, data.size() - 2) << "\n";
-		}
-		else if (stoi(parsed_data[0]) == static_cast<uint8_t>(CommandResult::YOUR_TURN)) {
-			std::cout << "The turn is yours\n";
-		}
-		else if (stoi(parsed_data[0]) == static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) {
-			add_turn_resources(data);
-		}
-		else {
-			m_command_result.push(data);
-		}
-	}
-}
-
-void CatanClient::add_turn_resources(const std::string& data) {
+void CatanClient::update_new_turn_info(const std::string& data) {
 	auto parsed_data = split(data, "\n");
-	auto dices_str = parsed_data[1];
-	auto a = split(dices_str, ",")[0];
-	uint32_t first_dice = atoi(a.c_str());
-	uint32_t second_dice = atoi(split(dices_str, ",")[1].c_str());
+	auto& dices_str = parsed_data.at(1);
+	uint32_t first_dice = atoi(split(dices_str, ",").at(0).c_str());
+	uint32_t second_dice = atoi(split(dices_str, ",").at(1).c_str());
 
 	std::cout << "The dice numbers are: " << std::to_string(first_dice) << "," << std::to_string(second_dice) << std::endl;
+	m_gui_client.update_dices(first_dice, second_dice);
+
 	if (parsed_data.size() <= 2) {
 		return;
 	}
-	auto resources_str = parsed_data[2];
+	auto& resources_str = parsed_data.at(2);
 	for (auto& resource_str : split(resources_str, ";")) {
-		auto key = static_cast<ResourceType>(atoi(split(resource_str, ",")[0].c_str()));
-		auto value = stoi(split(resources_str, ",")[1]);
-		m_resource_cards[key] += value;
+		auto key = static_cast<ResourceType>(atoi(split(resource_str, ",").at(0).c_str()));
+		auto value = stoi(split(resources_str, ",").at(1));
+		m_resource_cards.at(key) += value;
 	}
+	m_gui_client.update_available_resources(m_resource_cards);
 
 }
 
 void CatanClient::handle_build_edge() {
-	if (m_resource_cards[ResourceType::TREE] < 1 || m_resource_cards[ResourceType::CLAY] < 1) {
+	if (m_resource_cards.at(ResourceType::TREE) < 1 || m_resource_cards.at(ResourceType::CLAY) < 1) {
 		std::cout << "not enough source" << std::endl;
 		return;
 	}
@@ -132,15 +153,16 @@ void CatanClient::handle_build_edge() {
 		return;
 	}
 	m_command_result.pop();
-	m_resource_cards[ResourceType::TREE]--;
-	m_resource_cards[ResourceType::CLAY]--;
+	m_resource_cards.at(ResourceType::TREE)--;
+	m_resource_cards.at(ResourceType::CLAY)--;
 	std::cout << "create the edge" << std::endl;
+	m_gui_client.update_available_resources(m_resource_cards);
 
 }
 
 void CatanClient::handle_build_settlement() {
-	if (m_resource_cards[ResourceType::TREE] < 1 || m_resource_cards[ResourceType::CLAY] < 1 ||
-		m_resource_cards[ResourceType::WHEAT] < 1 || m_resource_cards[ResourceType::SHEEP] < 1) {
+	if (m_resource_cards.at(ResourceType::TREE) < 1 || m_resource_cards.at(ResourceType::CLAY) < 1 ||
+		m_resource_cards.at(ResourceType::WHEAT) < 1 || m_resource_cards.at(ResourceType::SHEEP) < 1) {
 		std::cout << "not enough source" << std::endl;
 		return;
 	}
@@ -166,12 +188,13 @@ void CatanClient::handle_build_settlement() {
 		return;
 	}
 	m_command_result.pop();
-	m_resource_cards[ResourceType::TREE]--;
-	m_resource_cards[ResourceType::CLAY]--;
-	m_resource_cards[ResourceType::SHEEP]--;
-	m_resource_cards[ResourceType::WHEAT]--;
+	m_resource_cards.at(ResourceType::TREE)--;
+	m_resource_cards.at(ResourceType::CLAY)--;
+	m_resource_cards.at(ResourceType::SHEEP)--;
+	m_resource_cards.at(ResourceType::WHEAT)--;
 
 	std::cout << "create the settlement" << std::endl;
+	m_gui_client.update_available_resources(m_resource_cards);
 }
 
 void CatanClient::handle_finish_turn() {
@@ -194,7 +217,7 @@ void CatanClient::handle_finish_turn() {
 }
 
 void CatanClient::handle_upgrade_settlement_to_city() {
-	if (m_resource_cards[ResourceType::STONE] < 3 || m_resource_cards[ResourceType::WHEAT] < 2) {
+	if (m_resource_cards.at(ResourceType::STONE) < 3 || m_resource_cards.at(ResourceType::WHEAT) < 2) {
 		std::cout << "not enough source" << std::endl;
 		return;
 	}
@@ -220,13 +243,14 @@ void CatanClient::handle_upgrade_settlement_to_city() {
 		return;
 	}
 	m_command_result.pop();
-	m_resource_cards[ResourceType::STONE]--;
-	m_resource_cards[ResourceType::STONE]--;
-	m_resource_cards[ResourceType::STONE]--;
-	m_resource_cards[ResourceType::WHEAT]--;
-	m_resource_cards[ResourceType::WHEAT]--;
+	m_resource_cards.at(ResourceType::STONE)--;
+	m_resource_cards.at(ResourceType::STONE)--;
+	m_resource_cards.at(ResourceType::STONE)--;
+	m_resource_cards.at(ResourceType::WHEAT)--;
+	m_resource_cards.at(ResourceType::WHEAT)--;
 
 	std::cout << "upgrade the settlement" << std::endl;
+	m_gui_client.update_available_resources(m_resource_cards);
 }
 
 void CatanClient::handle_roll_dices() {

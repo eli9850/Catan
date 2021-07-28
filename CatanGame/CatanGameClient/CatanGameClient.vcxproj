@@ -167,6 +167,7 @@
     <ClInclude Include="Client\Client.h" />
     <ClInclude Include="Client\Socket.h" />
     <ClInclude Include="GUI\GUIClient.h" />
+    <ClInclude Include="GUI\NodeSprite.h" />
     <ClInclude Include="StringUtils\StringUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

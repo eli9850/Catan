@@ -7,12 +7,12 @@ std::unordered_map<ResourceType, uint8_t>  Settlement::get_resources(const uint8
 
 	for (uint8_t i = 0; i < m_resources.size(); i++)
 	{
-		if (m_resources[i]->get_resource_number() == dice_nubmer) {
-			if (result.find(m_resources[i]->get_resource_type()) == result.end()) {
-				result[m_resources[i]->get_resource_type()] = 1;
+		if (m_resources.at(i)->get_resource_number() == dice_nubmer) {
+			if (result.find(m_resources.at(i)->get_resource_type()) == result.end()) {
+				result.try_emplace(m_resources.at(i)->get_resource_type(), 1);
 			}
 			else {
-				result[m_resources[i]->get_resource_type()] += 1;
+				result.at(m_resources.at(i)->get_resource_type()) += 1;
 			}
 			
 		}

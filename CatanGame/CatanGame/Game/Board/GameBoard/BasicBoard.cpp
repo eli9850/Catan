@@ -16,19 +16,19 @@ std::string BasicBoard::to_string() const
 	
 	for (auto i = 0; i < NUMBER_OF_RESOURCES_IN_COLUMN; i++) {
 		for (auto j = 0; j < NUMBER_OF_RESOURCES_IN_ROW; j++) {
-			to_string << std::to_string(static_cast<uint8_t>(m_resources[i][j]->get_resource_type()))
-				<< "," << m_resources[i][j]->get_resource_number() << ";";
+			to_string << std::to_string(static_cast<uint8_t>(m_resources.at(i).at(j)->get_resource_type()))
+				<< "," << m_resources.at(i).at(j)->get_resource_number() << ";";
 		}
 	}
 	to_string << "\n";
 	for (auto i = 0; i < NUMBER_OF_NODES_IN_COLUMN; i++) {
 		for (auto j = 0; j < NUMBER_OF_NODES_IN_ROW; j++) {
-			if (m_nodes[i][j]->get_structure() == nullptr) {
+			if (m_nodes.at(i).at(j)->get_structure() == nullptr) {
 				to_string << "0,5;";
 			}
 			else {
-				to_string << std::to_string(static_cast<uint8_t>(m_nodes[i][j]->get_structure_type())) << "," <<
-					std::to_string(static_cast<uint8_t>(m_nodes[i][j]->get_structure()->get_player()))
+				to_string << std::to_string(static_cast<uint8_t>(m_nodes.at(i).at(j)->get_structure_type())) << "," <<
+					std::to_string(static_cast<uint8_t>(m_nodes.at(i).at(j)->get_structure()->get_player()))
 					<< ";";
 			}
 
@@ -37,11 +37,11 @@ std::string BasicBoard::to_string() const
 	to_string << "\n";
 	for (auto i = 0; i < NUMBER_OF_EDGES_IN_COLUMN; i++){
 		for (auto j = 0; j < NUMBER_OF_EDGES_IN_ROW; j++) {
-			if (m_edges[i][j] == nullptr) {
+			if (m_edges.at(i).at(j) == nullptr) {
 				to_string << "5;";
 			}
 			else {
-				to_string << std::to_string(static_cast<uint8_t>(m_edges[i][j]->get_player())) << ";";
+				to_string << std::to_string(static_cast<uint8_t>(m_edges.at(i).at(j)->get_player())) << ";";
 			}
 		}
 	}
@@ -64,7 +64,6 @@ void BasicBoard::create_board()
 		ResourceType::CLAY,ResourceType::CLAY,ResourceType::CLAY,
 	};
 	const auto seed = static_cast<uint32_t>(std::chrono::system_clock::now().time_since_epoch().count());
-	srand(seed);
 	shuffle(resource_numbers.begin(), resource_numbers.end(), std::default_random_engine(seed));
 	shuffle(resource_types.begin(), resource_types.end(), std::default_random_engine(seed));
 	uint32_t resource_type_index = 0;
@@ -74,20 +73,20 @@ void BasicBoard::create_board()
 		for (int j = 0; j < NUMBER_OF_RESOURCES_IN_COLUMN; j++)
 		{
 			if (is_valid_resource_index(i, j)) {
-				if (resource_types[resource_type_index] == ResourceType::NONE) {
-					m_resources[i][j] = std::make_shared<Resource>(ResourceType::NONE, 0);
-					m_resources[i][j]->set_is_robber_on(true);
-					m_robber_resource_number.first = i;
-					m_robber_resource_number.second= j;
+				if (resource_types.at(resource_type_index) == ResourceType::NONE) {
+					m_resources.at(i).at(j) = std::make_shared<Resource>(ResourceType::NONE, 0);
+					m_resources.at(i).at(j)->set_is_robber_on(true);
+					m_robber_resource_number.first = j;
+					m_robber_resource_number.second= i;
 					resource_type_index++;
 					continue;
 				}
-				m_resources[i][j] = std::make_shared<Resource>(resource_types[resource_type_index], resource_numbers[resource_number_index]);
+				m_resources.at(i).at(j) = std::make_shared<Resource>(resource_types.at(resource_type_index), resource_numbers.at(resource_number_index));
 				resource_type_index++;
 				resource_number_index++;
 			}
 			else {
-				m_resources[i][j] = std::make_shared<Resource>(ResourceType::NONE, 0);
+				m_resources.at(i).at(j) = std::make_shared<Resource>(ResourceType::NONE, 0);
 			}
 		}
 	}
@@ -95,7 +94,7 @@ void BasicBoard::create_board()
 	{
 		for (int j = 0; j < NUMBER_OF_NODES_IN_ROW; j++)
 		{
-			m_nodes[i][j] = std::make_shared<Node>();
+			m_nodes.at(i).at(j) = std::make_shared<Node>();
 		}
 	}
 }
@@ -105,8 +104,8 @@ void BasicBoard::set_robber_number(const std::pair<uint32_t, uint32_t> resource_
 	if (!is_valid_resource_index(resource_number.first, resource_number.second)) {
 		throw InvalidNodeIndex("You are trying to put the robber in an invalid node");
 	}
-	m_resources[m_robber_resource_number.first][m_robber_resource_number.second].get()->set_is_robber_on(false);
-	m_resources[resource_number.first][resource_number.second].get()->set_is_robber_on(true);
+	m_resources.at(m_robber_resource_number.first).at(m_robber_resource_number.second).get()->set_is_robber_on(false);
+	m_resources.at(resource_number.first).at(resource_number.second).get()->set_is_robber_on(true);
 	m_robber_resource_number = resource_number;
 }
 
@@ -118,34 +117,35 @@ void BasicBoard::create_edge(const uint8_t edge_row, const uint8_t edge_col, con
 	if (edge_row % 2 == 1 && edge_col % 2 == 1) {
 		throw InvalidEdgeIndex("The index of the edge is invalid");
 	}
-	if (m_edges[edge_row][edge_col] != nullptr) {
+	if (m_edges.at(edge_row).at(edge_col) != nullptr) {
 		throw InvalidEdgeIndex("There is already an existing edge in that place");
 	}
-	m_edges[edge_row][edge_col] = std::make_shared<Edge>(player_type);
+	m_edges.at(edge_row).at(edge_col) = std::make_shared<Edge>(player_type);
 }
 
 void BasicBoard::create_settlement(const uint8_t node_row, const uint8_t node_col, const PlayerType player_type) {
 	if (!is_valid_node_index(node_row, node_col)) {
 		throw InvalidNodeIndex("The index of the node is invalid");
 	}
-	if (m_nodes[node_row][node_col]->get_structure_type() != StructureType::NONE) {
+	if (m_nodes.at(node_row).at(node_col)->get_structure_type() != StructureType::NONE) {
 		throw InvalidNodeIndex("There is already an existing structure in that place");
 	}
-	m_nodes[node_row][node_col]->set_structure(std::make_unique<Settlement>(
+	m_nodes.at(node_row).at(node_col)->set_structure(std::make_unique<Settlement>(
 		player_type,
 		get_node_adjacent_resources(node_row, node_col)));
-	m_nodes[node_row][node_col]->set_structure_type(StructureType::SETTLEMENT);
+	m_nodes.at(node_row).at(node_col)->set_structure_type(StructureType::SETTLEMENT);
 }
 
-void BasicBoard::upgrade_settlement_to_city(const uint8_t node_row, const uint8_t node_col) {
-	auto structure = m_nodes[node_row][node_col];
+void BasicBoard::upgrade_settlement_to_city(const uint8_t node_row, const uint8_t node_col) {\
+
+	auto& structure = m_nodes.at(node_row).at(node_col);
 	if (structure->get_structure_type() != StructureType::SETTLEMENT) {
 		throw NotSettelemnt("You are trying to create city without settlement");
 	}
-	m_nodes[node_row][node_col]->set_structure(std::make_unique<City>(
+	m_nodes.at(node_row).at(node_col)->set_structure(std::make_unique<City>(
 		structure->get_structure()->get_player(),
 		get_node_adjacent_resources(node_row, node_col)));
-	m_nodes[node_row][node_col]->set_structure_type(StructureType::CITY);
+	m_nodes.at(node_row).at(node_col)->set_structure_type(StructureType::CITY);
 	
 }
 
@@ -166,16 +166,20 @@ bool BasicBoard::is_valid_resource_index(const uint8_t resource_row, const uint8
 }
 
 bool BasicBoard::is_valid_node_index(const uint8_t node_row, const uint8_t node_col) const {
+
+	if (node_row != 1 && node_row != 2 && node_col == NUMBER_OF_NODES_IN_ROW - 1) {
+		return false;
+	}
 	if (node_row == 0 && (node_col < 4)) {
 		return false;
 	}
 	if (node_row == 1 && node_col < 2) {
 		return false;
 	}
-	if (node_row == 4 && node_col > NUMBER_OF_RESOURCES_IN_COLUMN - 1 - 2) {
+	if (node_row == 4 && node_col > NUMBER_OF_NODES_IN_ROW - 1 - 3) {
 		return false;
 	}
-	if (node_row == 5 && node_col > NUMBER_OF_RESOURCES_IN_COLUMN - 1 - 4) {
+	if (node_row == 5 && node_col > NUMBER_OF_NODES_IN_ROW - 1 - 5) {
 		return false;
 	}
 	return true;
@@ -212,7 +216,7 @@ std::shared_ptr<Resource> BasicBoard::get_resource(const uint8_t row_number, con
 	if (row_number < 0 || row_number >= NUMBER_OF_EDGES_IN_ROW || col_number < 0 || col_number >= NUMBER_OF_EDGES_IN_COLUMN) {
 		throw InvalidResourceIndex("The index is invlaid");
 	}
-	return m_resources[row_number][col_number];
+	return m_resources.at(row_number).at(col_number);
 }
 
 std::shared_ptr<Edge> BasicBoard::get_edge(const uint8_t row_number, const uint8_t col_number) const {
@@ -222,7 +226,7 @@ std::shared_ptr<Edge> BasicBoard::get_edge(const uint8_t row_number, const uint8
 	if (row_number < 0 || row_number >= NUMBER_OF_EDGES_IN_ROW || col_number < 0 || col_number >= NUMBER_OF_EDGES_IN_COLUMN) {
 		throw InvalidEdgeIndex("The index is invlaid");
 	}
-	return m_edges[row_number][col_number];
+	return m_edges.at(row_number).at(col_number);
 }
 
 std::shared_ptr<Node> BasicBoard::get_node(const uint8_t row_number, const uint8_t col_number) const {
@@ -232,7 +236,7 @@ std::shared_ptr<Node> BasicBoard::get_node(const uint8_t row_number, const uint8
 	if (row_number < 0 || row_number >= NUMBER_OF_NODES_IN_COLUMN || col_number < 0 || col_number >= NUMBER_OF_NODES_IN_ROW) {
 		throw InvalidNodeIndex("The index is invlaid");
 	}
-	return m_nodes[row_number][col_number];
+	return m_nodes.at(row_number).at(col_number);
 }
 
 std::vector<std::shared_ptr<Edge>> BasicBoard::get_edge_adjacent_edges(const uint8_t row_number, const uint8_t col_number) const {
@@ -415,8 +419,8 @@ std::vector<std::shared_ptr<Node>> BasicBoard::get_edge_adjacent_nodes(const uin
 			// out of index, not relevant
 		}
 		try {
-			if (get_node(1, col_number + 1)->get_structure() != nullptr) {
-				adjacent_nodes.push_back(get_node(1, col_number + 1));
+			if (get_node(1, col_number)->get_structure() != nullptr) {
+				adjacent_nodes.push_back(get_node(1, col_number));
 			}
 		}
 		catch (...) {
@@ -425,8 +429,8 @@ std::vector<std::shared_ptr<Node>> BasicBoard::get_edge_adjacent_nodes(const uin
 	}
 	else {
 		try {
-			if (get_node(row_number / 2 - 1, col_number + 1)->get_structure() != nullptr) {
-				adjacent_nodes.push_back(get_node(row_number / 2 - 1, col_number + 1));
+			if (get_node(row_number / 2, col_number + 1)->get_structure() != nullptr) {
+				adjacent_nodes.push_back(get_node(row_number / 2, col_number + 1));
 			}
 		}
 		catch (...) {
@@ -587,7 +591,7 @@ std::vector<std::shared_ptr<Resource>> BasicBoard::get_node_adjacent_resources(c
 	}
 	else if (col_number % 2 == 1) {
 		try {
-			adjacent_resources.push_back(get_resource(row_number - 1, col_number / 2 - 1));
+			adjacent_resources.push_back(get_resource(row_number - 1, col_number / 2));
 		}
 		catch (...) {
 			// out of index, not relevant
