@@ -3,16 +3,16 @@
 
 Player::Player(const PlayerType player_type) : m_player_type(player_type), m_number_of_points(0)
 {
-	m_development_cards[DevelopmentCards::ABUNDANCE_CARD] = 0;
-	m_development_cards[DevelopmentCards::ROAD_CARD] = 0;
-	m_development_cards[DevelopmentCards::POINT_CARD] = 0;
-	m_development_cards[DevelopmentCards::KNIGHT_CARD] = 0;
+	m_development_cards.try_emplace(DevelopmentCards::ABUNDANCE_CARD, 0);
+	m_development_cards.try_emplace(DevelopmentCards::ROAD_CARD, 0);
+	m_development_cards.try_emplace(DevelopmentCards::POINT_CARD, 0);
+	m_development_cards.try_emplace(DevelopmentCards::KNIGHT_CARD, 0);
 
-	m_resource_cards[ResourceType::CLAY] = 0;
-	m_resource_cards[ResourceType::WHEAT] = 0;
-	m_resource_cards[ResourceType::TREE] = 0;
-	m_resource_cards[ResourceType::STONE] = 0;
-	m_resource_cards[ResourceType::SHEEP] = 0;
+	m_resource_cards.try_emplace(ResourceType::CLAY, 0);
+	m_resource_cards.try_emplace(ResourceType::WHEAT, 0);
+	m_resource_cards.try_emplace(ResourceType::TREE, 0);
+	m_resource_cards.try_emplace(ResourceType::STONE, 0);
+	m_resource_cards.try_emplace(ResourceType::SHEEP, 0);
 }
 
 void Player::combine_resources(const std::unordered_map<ResourceType, uint8_t>& resources) {
@@ -21,22 +21,22 @@ void Player::combine_resources(const std::unordered_map<ResourceType, uint8_t>& 
 
 void Player::increase_development_card(const DevelopmentCards development_card)
 {
-	m_development_cards[development_card]++;
+	m_development_cards.at(development_card)++;
 }
 
 void Player::increase_resource_card(const ResourceType resource_card)
 {
-	m_resource_cards[resource_card]++;
+	m_resource_cards.at(resource_card)++;
 }
 
 void Player::decrease_development_card(const DevelopmentCards development_card)
 {
-	m_development_cards[development_card]--;
+	m_development_cards.at(development_card)--;
 }
 
 void Player::decrease_resource_card(const ResourceType resource_card)
 {
-	m_resource_cards[resource_card]--;
+	m_resource_cards.at(resource_card)--;
 }
 
 uint32_t Player::get_number_of_points() const

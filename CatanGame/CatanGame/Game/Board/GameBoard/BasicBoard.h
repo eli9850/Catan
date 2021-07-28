@@ -14,7 +14,7 @@
 
 constexpr uint32_t NUMBER_OF_RESOURCES_IN_ROW = 5;
 constexpr uint32_t NUMBER_OF_RESOURCES_IN_COLUMN = 5;
-constexpr uint32_t NUMBER_OF_NODES_IN_ROW = 11;
+constexpr uint32_t NUMBER_OF_NODES_IN_ROW = 12;
 constexpr uint32_t NUMBER_OF_NODES_IN_COLUMN = 6;
 constexpr uint32_t NUMBER_OF_EDGES_IN_ROW = 11;
 constexpr uint32_t NUMBER_OF_EDGES_IN_COLUMN = 11;

@@ -1,18 +1,20 @@
 #pragma once
 
+#include "GUI/GUIClient.h"
 #include "Client/Client.h"
+
 #include <string>
 #include <unordered_map>
 #include <queue>
 
 enum class ResourceType
 {
+	NONE,
 	WHEAT,
 	CLAY,
 	SHEEP,
 	TREE,
-	STONE,
-	NONE
+	STONE
 };
 
 enum class DevelopmentCards
@@ -67,12 +69,13 @@ public:
 
 private:
 	void recive_from_server();
+	void handle_player();
 	void handle_build_settlement();
 	void handle_upgrade_settlement_to_city();
 	void handle_build_edge();
 	void handle_finish_turn();
 	void handle_roll_dices();
-	void add_turn_resources(const std::string& data);
+	void update_new_turn_info(const std::string& data);
 
 private:
 	std::queue<std::string> m_command_result;
@@ -80,6 +83,7 @@ private:
 	std::unordered_map<ResourceType, uint32_t> m_resource_cards;
 	uint32_t m_number_of_points;
 	Client m_client;
+	GUIClient m_gui_client;
 	bool m_game_is_finished;
 };
 
