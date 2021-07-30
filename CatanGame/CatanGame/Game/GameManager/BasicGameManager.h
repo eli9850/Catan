@@ -18,12 +18,15 @@ enum class CommandType {
 	CITY,
 	EDGE,
 	ROLL_DICES,
+	ROBBED_RESOURCES,
 };
 
 enum class CommandResult {
 	SUCCESS,
 	INFO,
+	DICES_NUMBERS,
 	NEW_TURN_INFO,
+	ROBBER,
 	YOUR_TURN,
 	NOT_YOUR_TURN,
 	ONLY_SETTLEMENT,
@@ -31,6 +34,7 @@ enum class CommandResult {
 	NOT_ENOUGH_RESOURCES,
 	INVALID_PLACE,
 	TURN_AS_FINISHED,
+	FAILED_TO_ROB,
 };
 
 class BasicGameManager: public IGameManager
@@ -66,8 +70,10 @@ private:
 	Server m_server;
 	bool m_game_started;
 	std::vector<std::shared_ptr<Player>> m_players;
+
 	BasicBoard m_board;
 	uint8_t m_turn_number;
+	bool m_is_robbed_on;
 	// TODO: check if we already roll the dice, otherwise we can't pass the turn
 	//bool m_rolled_dices;
 };

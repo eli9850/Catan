@@ -57,6 +57,17 @@ void CatanClient::recive_from_server() {
 		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) {
 			update_new_turn_info(data);
 		}
+		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::DICES_NUMBERS)) {
+			auto& dices_str = parsed_data.at(1);
+			uint32_t first_dice = atoi(split(dices_str, ",").at(0).c_str());
+			uint32_t second_dice = atoi(split(dices_str, ",").at(1).c_str());
+
+			std::cout << "The dice numbers are: " << std::to_string(first_dice) << "," << std::to_string(second_dice) << std::endl;
+			m_gui_client.update_dices(first_dice, second_dice);
+		}
+		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::ROBBER)) {
+			handle_robbed_resources();
+		}
 		else {
 			m_command_result.push(data);
 		}
@@ -106,17 +117,12 @@ void CatanClient::handle_player() {
 
 void CatanClient::update_new_turn_info(const std::string& data) {
 	auto parsed_data = split(data, "\n");
-	auto& dices_str = parsed_data.at(1);
-	uint32_t first_dice = atoi(split(dices_str, ",").at(0).c_str());
-	uint32_t second_dice = atoi(split(dices_str, ",").at(1).c_str());
-
-	std::cout << "The dice numbers are: " << std::to_string(first_dice) << "," << std::to_string(second_dice) << std::endl;
-	m_gui_client.update_dices(first_dice, second_dice);
-
-	if (parsed_data.size() <= 2) {
+	
+	if (parsed_data.size() <= 1) {
+		// There are no new resources
 		return;
 	}
-	auto& resources_str = parsed_data.at(2);
+	auto& resources_str = parsed_data.at(1);
 	for (auto& resource_str : split(resources_str, ";")) {
 		auto key = static_cast<ResourceType>(atoi(split(resource_str, ",").at(0).c_str()));
 		auto value = stoi(split(resources_str, ",").at(1));
@@ -269,4 +275,78 @@ void CatanClient::handle_roll_dices() {
 	}
 	m_command_result.pop();
 	std::cout << "roll the dice" << std::endl;
+}
+
+void CatanClient::handle_robbed_resources() {
+
+	while (true) {
+		auto chosen_resources_to_rob = choose_resources_to_rob();
+
+		std::stringstream command;
+		command << std::to_string(static_cast<uint8_t>(CommandType::ROBBED_RESOURCES)) << '\n';
+		command << chosen_resources_to_rob;
+
+		m_client.send_data(command.str());
+		while (m_command_result.empty())
+		{
+			Sleep(100);
+		}
+		if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS))) {
+			m_command_result.pop();
+			std::cout << "failed to rob, please try again" << std::endl;
+		}
+		else {
+			m_command_result.pop();
+			rob_recources(chosen_resources_to_rob);
+			m_gui_client.update_available_resources(m_resource_cards);
+			return;
+		}
+	}
+}
+
+std::string CatanClient::choose_resources_to_rob() const {
+
+	std::stringstream chosen_resources_to_rob;
+	std::string number_of_resources;
+
+	for (const auto& key : m_resource_cards) {
+		while (true) {
+			std::cout << "enter how many" << std::to_string(static_cast<uint8_t>(key.first)) << "to remove: ";
+			std::cin >> number_of_resources;
+			if (std::stoi(number_of_resources) >= 0 && std::stoi(number_of_resources) <= m_resource_cards.at(key.first)) {
+				break;
+			}
+		}
+		chosen_resources_to_rob << convert_resource_type_to_string(key.first) << "," << number_of_resources << ";";
+	}
+	return chosen_resources_to_rob.str();
+}
+
+void CatanClient::rob_recources(const std::string& resources_to_robbed) {
+
+	for (auto& resource_str : split(resources_to_robbed, ";")) {
+		auto key = static_cast<ResourceType>(atoi(split(resource_str, ",").at(0).c_str()));
+		auto value = stoi(split(resources_to_robbed, ",").at(1));
+		m_resource_cards.at(key) -= value;
+	}
+}
+
+std::string convert_resource_type_to_string(ResourceType resource) {
+	switch (resource)
+	{
+	case ResourceType::NONE:
+		return "None";
+	case ResourceType::WHEAT:
+		return "Wheat";
+	case ResourceType::CLAY:
+		return "clay";
+	case ResourceType::SHEEP:
+		return "sheep";
+	case ResourceType::TREE:
+		return "sheep";
+	case ResourceType::STONE:
+		return "sheep";
+	default:
+		return "";
+	}
 }

@@ -46,12 +46,15 @@ enum class CommandType {
 	CITY,
 	EDGE,
 	ROLL_DICES,
+	ROBBED_RESOURCES,
 };
 
 enum class CommandResult {
 	SUCCESS,
 	INFO,
+	DICES_NUMBERS,
 	NEW_TURN_INFO,
+	ROBBER,
 	YOUR_TURN,
 	NOT_YOUR_TURN,
 	ONLY_SETTLEMENT,
@@ -59,6 +62,7 @@ enum class CommandResult {
 	NOT_ENOUGH_RESOURCES,
 	INVALID_PLACE,
 	TURN_AS_FINISHED,
+	FAILED_TO_ROB,
 };
 
 class CatanClient
@@ -75,7 +79,10 @@ private:
 	void handle_build_edge();
 	void handle_finish_turn();
 	void handle_roll_dices();
+	void handle_robbed_resources();
 	void update_new_turn_info(const std::string& data);
+	std::string choose_resources_to_rob() const;
+	void rob_recources(const std::string& resources_to_robbed);
 
 private:
 	std::queue<std::string> m_command_result;
@@ -87,3 +94,4 @@ private:
 	bool m_game_is_finished;
 };
 
+std::string convert_resource_type_to_string(ResourceType resource);
