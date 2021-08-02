@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Events\Event.h" />
+    <ClInclude Include="Exceptions\EventsExceptions.h" />
     <ClInclude Include="Exceptions\SocketExceptions.h" />
     <ClInclude Include="Server\Server.h" />
     <ClInclude Include="Exceptions\GameManagerExceptions.h" />
@@ -38,9 +40,12 @@
     <ClInclude Include="Utils\Consts.h" />
     <ClInclude Include="Utils\MapUtils.h" />
     <ClInclude Include="Utils\StringUtils.h" />
+    <ClInclude Include="Utils\WinApi.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Events\Event.cpp" />
     <ClCompile Include="Exceptions\CatanServerExceptions.h" />
+    <ClCompile Include="Exceptions\PlayerExceptions.h" />
     <ClCompile Include="Server\Server.cpp" />
     <ClCompile Include="Game\GameManager\BasicGameManager.cpp" />
     <ClCompile Include="Exceptions\BoardExceptions.h" />
@@ -56,6 +61,7 @@
     <ClCompile Include="Server\Socket.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Utils\StringUtils.cpp" />
+    <ClCompile Include="Utils\WinApi.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -158,17 +158,23 @@
     <ClCompile Include="CatanClient\CatanClient.cpp" />
     <ClCompile Include="Client\Client.cpp" />
     <ClCompile Include="Client\Socket.cpp" />
+    <ClCompile Include="Events\Event.cpp" />
     <ClCompile Include="GUI\GUIClient.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="StringUtils\StringUtils.cpp" />
+    <ClCompile Include="WaitQueue\WaitQueue.cpp" />
+    <ClCompile Include="WinApi\WinApi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CatanClient\CatanClient.h" />
     <ClInclude Include="Client\Client.h" />
     <ClInclude Include="Client\Socket.h" />
+    <ClInclude Include="Events\Event.h" />
     <ClInclude Include="GUI\GUIClient.h" />
     <ClInclude Include="GUI\NodeSprite.h" />
     <ClInclude Include="StringUtils\StringUtils.h" />
+    <ClInclude Include="WaitQueue\WaitQueue.h" />
+    <ClInclude Include="WinApi\WinApi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
