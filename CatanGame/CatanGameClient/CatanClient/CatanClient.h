@@ -2,6 +2,8 @@
 
 #include "GUI/GUIClient.h"
 #include "Client/Client.h"
+#include "WaitQueue/WaitQueue.h"
+#include "Events/Event.h"
 
 #include <string>
 #include <unordered_map>
@@ -72,7 +74,8 @@ public:
 	void start_game();
 
 private:
-	void recive_from_server();
+	void get_commands_from_server();
+	void handle_server_commands();
 	void handle_player();
 	void handle_build_settlement();
 	void handle_upgrade_settlement_to_city();
@@ -85,6 +88,7 @@ private:
 	void rob_recources(const std::string& resources_to_robbed);
 
 private:
+	WaitQueue m_commands;
 	std::queue<std::string> m_command_result;
 	std::unordered_map<DevelopmentCards, uint8_t> m_development_cards;
 	std::unordered_map<ResourceType, uint32_t> m_resource_cards;
@@ -92,6 +96,8 @@ private:
 	Client m_client;
 	GUIClient m_gui_client;
 	bool m_game_is_finished;
+	Event m_is_my_turn;
+
 };
 
 std::string convert_resource_type_to_string(ResourceType resource);

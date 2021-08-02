@@ -5,6 +5,8 @@
 
 #include "StringUtils/StringUtils.h"
 
+constexpr std::string_view COMMAND_END_MAGIC = "ABCD1234";
+
 CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) : m_client(ip, port_nubmer) {
 	m_number_of_points = 0;
 	m_game_is_finished = false;
@@ -16,14 +18,16 @@ CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) 
 	m_resource_cards.try_emplace(ResourceType::CLAY, 4);
 	m_resource_cards.try_emplace(ResourceType::WHEAT, 2);
 	m_resource_cards.try_emplace(ResourceType::TREE, 4);
-	m_resource_cards.try_emplace(ResourceType::STONE, 0);
+	m_resource_cards.try_emplace(ResourceType::STONE, 10);
 	m_resource_cards.try_emplace(ResourceType::SHEEP, 2);
 }
 
 void CatanClient::start_game() {
 	
+	std::thread get_commands_thread(&CatanClient::get_commands_from_server, this);
+
 	std::string data;
-	data = m_client.recive_data();
+	data = m_commands.pop_and_front();
 	auto parsed_data = split(data, "\n");
 	std::cout << "Got result: " << parsed_data.at(0) << std::endl;
 	std::string board = data.substr(2, data.size() - 2);
@@ -31,28 +35,51 @@ void CatanClient::start_game() {
 	
 	m_gui_client.create_catan_board(data.substr(2, data.size() - 2));
 	
-	std::thread player_func(&CatanClient::handle_player, this);
-	std::thread recived_thread(&CatanClient::recive_from_server, this);
+	std::thread handle_player_thread(&CatanClient::handle_player, this);
+	std::thread handle_server_commands_thread(&CatanClient::handle_server_commands, this);
 
+	m_gui_client.update_available_resources(m_resource_cards);
 	m_gui_client.start_game();
 
-	player_func.join();
-	recived_thread.join();
+	get_commands_thread.join();
+	handle_player_thread.join();
+	handle_server_commands_thread.join();
 }
 
-void CatanClient::recive_from_server() {
+void CatanClient::get_commands_from_server() {
 	std::string data;
 	while (true) {
-		data = "";
 		data = m_client.recive_data();
+		for (auto& command : split(data, COMMAND_END_MAGIC.data())) {
+			auto parsed_command = split(command, "\n");
+			std::cout << "Got result: " << parsed_command.at(0) << std::endl;
+			if (stoi(parsed_command.at(0)) == static_cast<uint8_t>(CommandResult::SUCCESS)) {
+				m_command_result.push(command);
+			}
+			else if (stoi(parsed_command.at(0)) == static_cast<uint8_t>(CommandResult::TURN_AS_FINISHED)) {
+				m_command_result.push(command);
+			}
+			else {
+				m_commands.push(command);
+			}
+			
+		}
+	}
+}
+
+void CatanClient::handle_server_commands() {
+
+	std::string data;
+	while (true) {
+		data = m_commands.pop_and_front();
 		auto parsed_data = split(data, "\n");
-		std::cout << "Got result: " << parsed_data.at(0) << std::endl;
 		if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::INFO)) {
 			std::cout << "The board is:\n" << data.substr(2, data.size() - 2) << "\n";
 			m_gui_client.update_board(data.substr(2, data.size() - 2));
 		}
 		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::YOUR_TURN)) {
 			std::cout << "The turn is yours\n";
+			m_is_my_turn.set_event();
 		}
 		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) {
 			update_new_turn_info(data);
@@ -77,6 +104,7 @@ void CatanClient::recive_from_server() {
 void CatanClient::handle_player() {
 	uint8_t choise = 0;
 	while (!m_game_is_finished) {
+		WaitForSingleObject(m_is_my_turn.get_event(), INFINITE);
 		std::cout << "enter what you want to do:" << std::endl;
 		std::cout << "1. build settlement" << std::endl;
 		std::cout << "2. upgrade settelement to city" << std::endl;
@@ -84,6 +112,7 @@ void CatanClient::handle_player() {
 		std::cout << "4. finish turn" << std::endl;
 		std::cout << "5. roll dices" << std::endl;
 		std::cout << "6. print resources" << std::endl;
+		std::cout << "7. print size of result" << std::endl;
 		std::cin >> choise;
 		switch (choise)
 		{
@@ -109,6 +138,8 @@ void CatanClient::handle_player() {
 			std::cout << "Wheat: " << std::to_string(m_resource_cards.at(ResourceType::WHEAT)) << std::endl;
 			std::cout << "Clay: " << std::to_string(m_resource_cards.at(ResourceType::CLAY)) << std::endl;
 			continue;
+		case '7':
+			std::cout << "The size of result is: " << m_command_result.size() << std::endl;
 		default:
 			continue;
 		}
@@ -149,6 +180,7 @@ void CatanClient::handle_build_edge() {
 	command << row_number << "," << col_number;
 
 	m_client.send_data(command.str());
+	m_is_my_turn.reset_event();
 	while (m_command_result.empty())
 	{
 		Sleep(100);
@@ -213,13 +245,14 @@ void CatanClient::handle_finish_turn() {
 	{
 		Sleep(100);
 	}
-	if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS))) {
+	if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::TURN_AS_FINISHED))) {
 		m_command_result.pop();
 		std::cout << "could not finish turn" << std::endl;
 		return;
 	}
 	m_command_result.pop();
 	std::cout << "your turn is finished" << std::endl;
+	m_is_my_turn.reset_event();
 }
 
 void CatanClient::handle_upgrade_settlement_to_city() {

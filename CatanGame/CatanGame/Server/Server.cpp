@@ -6,6 +6,8 @@
 #include <ws2tcpip.h>
 #include <iostream>
 
+constexpr std::string_view COMMAND_END_MAGIC = "ABCD1234";
+
 Server::Server(const std::string& port_number) {
 
 	WSADATA wsaData;
@@ -67,7 +69,8 @@ std::string Server::recive_data(const uint8_t client) const {
 
 void Server::send_data(const uint8_t client, const std::string& send_data) const {
 
-	if (send(m_clients_sockets.at(client).get(), send_data.c_str(), send_data.size(), 0) != send_data.size()) {
+	std::string data_with_magic = send_data + COMMAND_END_MAGIC.data();
+	if (send(m_clients_sockets.at(client).get(), data_with_magic.c_str(), data_with_magic.size(), 0) != data_with_magic.size()) {
 		throw SendError("Could not recive the data with error: " + std::to_string(WSAGetLastError()));
 	}
 }
