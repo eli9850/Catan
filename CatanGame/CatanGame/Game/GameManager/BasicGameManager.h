@@ -7,6 +7,7 @@
 #include "Game/Board/GameBoard/BasicBoard.h"
 #include "Server/Server.h"
 #include "Game/Players/Players.h"
+#include "Events/Event.h"
 
 constexpr uint8_t MIN_PLAYER_NUMBER = 3;
 constexpr uint8_t MAX_PLAYER_NUMBER = 4;
@@ -18,12 +19,16 @@ enum class CommandType {
 	CITY,
 	EDGE,
 	ROLL_DICES,
+	ROBBED_RESOURCES,
+	MOVE_KNIGHT,
 };
 
 enum class CommandResult {
 	SUCCESS,
 	INFO,
+	DICES_NUMBERS,
 	NEW_TURN_INFO,
+	ROBBER,
 	YOUR_TURN,
 	NOT_YOUR_TURN,
 	ONLY_SETTLEMENT,
@@ -31,6 +36,7 @@ enum class CommandResult {
 	NOT_ENOUGH_RESOURCES,
 	INVALID_PLACE,
 	TURN_AS_FINISHED,
+	FAILED_TO_ROB,
 };
 
 class BasicGameManager: public IGameManager
@@ -40,6 +46,8 @@ public:
 
 	// function for the start of the game
 	void start_game() override;
+
+private:
 	void connect_players_and_start();
 	void handle_player(const uint8_t player_number);
 	void initialize_player_start(const uint8_t player_number);
@@ -53,6 +61,7 @@ public:
 	CommandResult handle_upgrade_settlement_to_city(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_roll_dices(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_robber(const uint8_t player_number, const std::vector<std::string> data);
+	void move_knight(const uint8_t player_number);
 	
 	// functions for help
 	bool is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;
@@ -66,8 +75,10 @@ private:
 	Server m_server;
 	bool m_game_started;
 	std::vector<std::shared_ptr<Player>> m_players;
+	std::vector<Event> m_events;
 	BasicBoard m_board;
 	uint8_t m_turn_number;
+	bool m_is_robbed_on;
 	// TODO: check if we already roll the dice, otherwise we can't pass the turn
 	//bool m_rolled_dices;
 };

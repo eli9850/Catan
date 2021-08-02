@@ -33,6 +33,8 @@ public:
 	PlayerType get_player_type() const;
 	uint32_t get_number_of_points() const;
 	uint8_t get_number_of_resource_cards(const ResourceType resource) const;
+	uint8_t get_number_of_available_resources() const;
+	void rob_resources(const std::string& resources_to_robbed);
 
 
 private:

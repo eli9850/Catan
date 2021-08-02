@@ -1,8 +1,10 @@
 #include "BasicGameManager.h"
 #include "Exceptions/GameManagerExceptions.h"
 #include "Exceptions/BoardExceptions.h"
+#include "Exceptions/PlayerExceptions.h"
 #include "Utils/StringUtils.h"
 #include "Utils/MapUtils.h"
+#include "Utils/WinApi.h"
 
 #include <iostream>
 #include <string>
@@ -11,15 +13,16 @@
 #include <random>
 
 BasicGameManager::BasicGameManager(const uint8_t number_of_players, const std::string& port_number):
-	m_server(port_number), m_turn_number(0), m_game_started(false) {
+	m_server(port_number), m_turn_number(0), m_game_started(false), m_is_robbed_on(false){
 
 	if (number_of_players < MIN_PLAYER_NUMBER || number_of_players > MAX_PLAYER_NUMBER) {
-		throw InvalidPlayersNumber("You enter invalid number of players");
+		//throw InvalidPlayersNumber("You enter invalid number of players");
 	}
 	m_players.resize(number_of_players);
 	for (auto i = 0; i < number_of_players; i++) {
 		m_players.at(i) = std::make_shared<Player>(static_cast<PlayerType>(i));
 	}
+	m_events.resize(number_of_players);
 	m_board.create_board();
 }
 
@@ -35,6 +38,8 @@ void BasicGameManager::connect_players_and_start() {
 	}
 	std::cout << "all players connected" << std::endl;
 	send_board_to_everyone();
+	
+	m_server.send_data(0, std::to_string(static_cast<uint8_t>(CommandResult::YOUR_TURN)));
 	for (uint8_t i = 0; i < m_players.size(); i++) {
 		std::thread temp(&BasicGameManager::handle_player ,this, i);
 		players_threads.push_back(std::move(temp));
@@ -160,7 +165,33 @@ CommandResult BasicGameManager::handle_command(const uint8_t player_number, cons
 }
 
 CommandResult BasicGameManager::handle_command_when_not_your_turn(const uint8_t player_number, const std::string& data) {
-	return CommandResult::NOT_YOUR_TURN;
+	
+	auto parsed_data = split(data, "\n");
+	CommandResult result;
+	auto& resource_to_robbed = parsed_data.at(1);
+	switch (static_cast<CommandType>(std::stoi(parsed_data.at(0))))
+	{
+	case CommandType::ROBBED_RESOURCES:
+		if (!m_is_robbed_on) {
+			return CommandResult::NOT_YOUR_TURN;
+		}
+		try {
+			m_players.at(player_number)->rob_resources(resource_to_robbed);
+		}
+		catch (const WrongNumberOfRobbedResourceException& e) {
+			return CommandResult::FAILED_TO_ROB;
+		}	
+		m_events.at(player_number).set_event();
+		return CommandResult::SUCCESS;
+	case CommandType::SETTLEMENT:
+	case CommandType::EDGE:
+	case CommandType::FINISH_TURN:
+	case CommandType::CITY:
+	case CommandType::ROLL_DICES:
+		return CommandResult::NOT_YOUR_TURN;
+	default:
+		throw UnknownCommand("This is an unknown command");
+	}
 }
 
 CommandResult BasicGameManager::handle_create_edge(const uint8_t player_number, const std::vector<std::string> data) {
@@ -267,9 +298,16 @@ CommandResult BasicGameManager::handle_upgrade_settlement_to_city(const uint8_t 
 CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, const std::vector<std::string> data) {
 	uint8_t first_dice = 1 + rand() % 6;
 	uint8_t second_dice = 1 + rand() % 6;
-	uint8_t dice_number = first_dice + second_dice;
+	uint32_t dice_number = first_dice + second_dice;
 
 	std::cout << "The number of the dices is: " << std::to_string(dice_number) << std::endl;
+
+	for (const auto& player : m_players) {
+		std::stringstream data_to_send;
+		data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::DICES_NUMBERS)) << "\n";
+		data_to_send << std::to_string(first_dice) << "," << std::to_string(second_dice) << "\n";
+		m_server.send_data(static_cast<uint8_t>(player->get_player_type()), data_to_send.str());
+	}
 
 	if (dice_number == ROBBER_NUMBER) {
 		return handle_robber(player_number, data);
@@ -278,7 +316,6 @@ CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, c
 	for(const auto& player : m_players) {
 		std::stringstream data_to_send;
 		data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::NEW_TURN_INFO)) << "\n";
-		data_to_send << std::to_string(first_dice) << "," << std::to_string(second_dice) << "\n";
 
 		std::unordered_map<ResourceType, uint8_t> result;
 		auto& board_nodes = m_board.get_nodes();
@@ -303,7 +340,47 @@ CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, c
 }
 
 CommandResult BasicGameManager::handle_robber(const uint8_t player_number, const std::vector<std::string> data) {
+	
+	m_is_robbed_on = true;
+	for (const auto& player : m_players) {
+		if (player->get_number_of_available_resources() > 7) {
+			m_events.at(static_cast<uint8_t>(player->get_player_type())).reset_event();
+			std::stringstream data_to_send;
+			data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::ROBBER));
+			m_server.send_data(static_cast<uint8_t>(player->get_player_type()), data_to_send.str());
+		}
+	}
+	if (m_players.at(player_number)->get_number_of_available_resources() > 7) {
+		m_events.at(player_number).set_event();
+		auto resource_to_robbed = m_server.recive_data(player_number);
+		m_players.at(player_number)->rob_resources(resource_to_robbed.substr(resource_to_robbed.find('\n') + 1, resource_to_robbed.size() - resource_to_robbed.find('\n') + 1));
+		std::stringstream data_to_send;
+		data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS));
+		m_server.send_data(player_number, data_to_send.str());
+	}
+	
+	WinUtils::wait_for_multiple_objects(m_events.size(), m_events, TRUE, INFINITE);
+	m_is_robbed_on = false;
+
+	move_knight(player_number
+	);
+
 	return CommandResult::SUCCESS;
+}
+
+void BasicGameManager::move_knight(const uint8_t player_number) {
+	std::stringstream data_to_send;
+	data_to_send << std::to_string(static_cast<uint8_t>(CommandType::MOVE_KNIGHT));
+	m_server.send_data(player_number, data_to_send.str());
+	auto knight_position_str = m_server.recive_data(player_number);
+	std::pair<uint32_t, uint32_t> knight_position(std::stoi(split(knight_position_str, ",").at(0)), std::stoi(split(knight_position_str, ",").at(1)));
+	m_board.set_robber_number(knight_position);
+
+	send_board_to_everyone();
+
+	data_to_send.str("");
+	data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS));
+	m_server.send_data(player_number, data_to_send.str());
 }
 
 bool BasicGameManager::is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const {
