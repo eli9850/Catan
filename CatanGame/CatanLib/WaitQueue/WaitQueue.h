@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-namespace CatanUtils {
+namespace QueueUtils {
 
 	class WaitQueue
 	{
@@ -19,6 +19,4 @@ namespace CatanUtils {
 		std::queue<std::string> m_commands;
 		WinUtils::Event m_event;
 	};
-
-
 }
