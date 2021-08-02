@@ -159,6 +159,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Catan\Board\Edges\Edge.h" />
+    <ClInclude Include="Catan\Board\Nodes\Node.h" />
+    <ClInclude Include="Catan\Board\Resources\Resource.h" />
+    <ClInclude Include="Catan\Board\Structures\City.h" />
+    <ClInclude Include="Catan\Board\Structures\IStructure.h" />
+    <ClInclude Include="Catan\Board\Structures\Settlement.h" />
     <ClInclude Include="Catan\CatanConsts.h" />
     <ClInclude Include="Catan\Players\Players.h" />
     <ClInclude Include="Exceptions\BoardExceptions.h" />
@@ -181,6 +187,11 @@
     <ClInclude Include="WinWrapers\WinUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Catan\Board\Edges\Edge.cpp" />
+    <ClCompile Include="Catan\Board\Nodes\Node.cpp" />
+    <ClCompile Include="Catan\Board\Resources\Resource.cpp" />
+    <ClCompile Include="Catan\Board\Structures\City.cpp" />
+    <ClCompile Include="Catan\Board\Structures\Settelement.cpp" />
     <ClCompile Include="Catan\Players\Players.cpp" />
     <ClCompile Include="Exceptions\MapExceptions.h" />
     <ClCompile Include="Exceptions\WinExceptions.h" />

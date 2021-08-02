@@ -2,6 +2,12 @@
 
 namespace CatanUtils {
 
+	enum class StructureType {
+		NONE,
+		SETTLEMENT,
+		CITY
+	};
+
 	enum class ResourceType
 	{
 		NONE,

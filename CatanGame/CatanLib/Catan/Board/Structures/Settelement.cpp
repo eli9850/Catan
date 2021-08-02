@@ -1,0 +1,23 @@
+#include "Settlement.h"
+
+namespace CatanUtils {
+
+	Settlement::Settlement(PlayerType player, std::vector<std::shared_ptr<Resource>> resources) : IStructure(player, std::move(resources)) {}
+
+	std::unordered_map<ResourceType, uint32_t>  Settlement::get_resources(const uint32_t dice_nubmer) const {
+		std::unordered_map<ResourceType, uint32_t> result;
+
+		for (auto i = 0; i < m_resources.size(); i++)
+		{
+			if (m_resources.at(i)->get_resource_number() == dice_nubmer && !m_resources.at(i)->is_robber_on()) {
+				if (result.find(m_resources.at(i)->get_resource_type()) == result.end()) {
+					result.try_emplace(m_resources.at(i)->get_resource_type(), 1);
+				}
+				else {
+					result.at(m_resources.at(i)->get_resource_type()) += 1;
+				}
+			}
+		}
+		return result;
+	}
+}
