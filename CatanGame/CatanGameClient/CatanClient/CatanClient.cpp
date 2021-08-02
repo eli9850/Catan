@@ -93,10 +93,12 @@ void CatanClient::handle_server_commands() {
 			m_gui_client.update_dices(first_dice, second_dice);
 		}
 		else if (stoi(parsed_data.at(0)) == static_cast<uint8_t>(CommandResult::ROBBER)) {
-			handle_robbed_resources();
-		}
-		else {
-			m_command_result.push(data);
+			if (WaitForSingleObject(m_is_my_turn.get_event(), 0) != WAIT_TIMEOUT) {
+				m_command_result.push(data);
+			}
+			else {
+				handle_robbed_resources();
+			}	
 		}
 	}
 }
@@ -301,6 +303,11 @@ void CatanClient::handle_roll_dices() {
 	{
 		Sleep(100);
 	}
+	if (m_command_result.front() == std::to_string(static_cast<uint8_t>(CommandResult::ROBBER))) {
+		m_command_result.pop();
+		handle_robbed_resources();
+		return;
+	}
 	if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS))) {
 		m_command_result.pop();
 		std::cout << "Could not roll the dices" << std::endl;
@@ -344,13 +351,13 @@ std::string CatanClient::choose_resources_to_rob() const {
 
 	for (const auto& key : m_resource_cards) {
 		while (true) {
-			std::cout << "enter how many" << std::to_string(static_cast<uint8_t>(key.first)) << "to remove: ";
+			std::cout << "enter how many" << convert_resource_type_to_string(key.first) << "to remove: ";
 			std::cin >> number_of_resources;
 			if (std::stoi(number_of_resources) >= 0 && std::stoi(number_of_resources) <= m_resource_cards.at(key.first)) {
 				break;
 			}
 		}
-		chosen_resources_to_rob << convert_resource_type_to_string(key.first) << "," << number_of_resources << ";";
+		chosen_resources_to_rob << std::to_string(static_cast<uint8_t>(key.first)) << "," << number_of_resources << ";";
 	}
 	return chosen_resources_to_rob.str();
 }
@@ -359,7 +366,7 @@ void CatanClient::rob_recources(const std::string& resources_to_robbed) {
 
 	for (auto& resource_str : split(resources_to_robbed, ";")) {
 		auto key = static_cast<ResourceType>(atoi(split(resource_str, ",").at(0).c_str()));
-		auto value = stoi(split(resources_to_robbed, ",").at(1));
+		auto value = stoi(split(resource_str, ",").at(1));
 		m_resource_cards.at(key) -= value;
 	}
 }
@@ -368,17 +375,17 @@ std::string convert_resource_type_to_string(ResourceType resource) {
 	switch (resource)
 	{
 	case ResourceType::NONE:
-		return "None";
+		return "None ";
 	case ResourceType::WHEAT:
-		return "Wheat";
+		return "Wheat ";
 	case ResourceType::CLAY:
-		return "clay";
+		return "clay ";
 	case ResourceType::SHEEP:
-		return "sheep";
+		return "sheeps ";
 	case ResourceType::TREE:
-		return "sheep";
+		return "trees ";
 	case ResourceType::STONE:
-		return "sheep";
+		return "stones ";
 	default:
 		return "";
 	}

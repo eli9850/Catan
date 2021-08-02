@@ -4,6 +4,7 @@
 #include "Exceptions/PlayerExceptions.h"
 #include "Utils/StringUtils.h"
 #include "Utils/MapUtils.h"
+#include "Utils/WinApi.h"
 
 #include <iostream>
 #include <string>
@@ -15,12 +16,13 @@ BasicGameManager::BasicGameManager(const uint8_t number_of_players, const std::s
 	m_server(port_number), m_turn_number(0), m_game_started(false), m_is_robbed_on(false){
 
 	if (number_of_players < MIN_PLAYER_NUMBER || number_of_players > MAX_PLAYER_NUMBER) {
-		throw InvalidPlayersNumber("You enter invalid number of players");
+		//throw InvalidPlayersNumber("You enter invalid number of players");
 	}
 	m_players.resize(number_of_players);
 	for (auto i = 0; i < number_of_players; i++) {
 		m_players.at(i) = std::make_shared<Player>(static_cast<PlayerType>(i));
 	}
+	m_events.resize(number_of_players);
 	m_board.create_board();
 }
 
@@ -36,6 +38,8 @@ void BasicGameManager::connect_players_and_start() {
 	}
 	std::cout << "all players connected" << std::endl;
 	send_board_to_everyone();
+	
+	m_server.send_data(0, std::to_string(static_cast<uint8_t>(CommandResult::YOUR_TURN)));
 	for (uint8_t i = 0; i < m_players.size(); i++) {
 		std::thread temp(&BasicGameManager::handle_player ,this, i);
 		players_threads.push_back(std::move(temp));
@@ -164,20 +168,20 @@ CommandResult BasicGameManager::handle_command_when_not_your_turn(const uint8_t 
 	
 	auto parsed_data = split(data, "\n");
 	CommandResult result;
+	auto& resource_to_robbed = parsed_data.at(1);
 	switch (static_cast<CommandType>(std::stoi(parsed_data.at(0))))
 	{
 	case CommandType::ROBBED_RESOURCES:
 		if (!m_is_robbed_on) {
 			return CommandResult::NOT_YOUR_TURN;
 		}
-		auto& resource_to_robbed = parsed_data.at(1);
 		try {
 			m_players.at(player_number)->rob_resources(resource_to_robbed);
 		}
 		catch (const WrongNumberOfRobbedResourceException& e) {
 			return CommandResult::FAILED_TO_ROB;
 		}	
-		// TODO signle event
+		m_events.at(player_number).set_event();
 		return CommandResult::SUCCESS;
 	case CommandType::SETTLEMENT:
 	case CommandType::EDGE:
@@ -302,6 +306,7 @@ CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, c
 		std::stringstream data_to_send;
 		data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::DICES_NUMBERS)) << "\n";
 		data_to_send << std::to_string(first_dice) << "," << std::to_string(second_dice) << "\n";
+		m_server.send_data(static_cast<uint8_t>(player->get_player_type()), data_to_send.str());
 	}
 
 	if (dice_number == ROBBER_NUMBER) {
@@ -339,17 +344,19 @@ CommandResult BasicGameManager::handle_robber(const uint8_t player_number, const
 	m_is_robbed_on = true;
 	for (const auto& player : m_players) {
 		if (player->get_number_of_available_resources() > 7) {
-			// TODO unsignle player
+			m_events.at(static_cast<uint8_t>(player->get_player_type())).reset_event();
 			std::stringstream data_to_send;
-			data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::ROBBER)) << "\n";
+			data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::ROBBER));
+			m_server.send_data(static_cast<uint8_t>(player->get_player_type()), data_to_send.str());
 		}
 	}
 	if (m_players.at(player_number)->get_number_of_available_resources() > 7) {
-		// TODO signle player
+		m_events.at(player_number).set_event();
 		auto resource_to_robbed = m_server.recive_data(player_number);
-		m_players.at(player_number)->rob_resources(resource_to_robbed);
+		m_players.at(player_number)->rob_resources(resource_to_robbed.substr(resource_to_robbed.find('\n') + 1, resource_to_robbed.size() - resource_to_robbed.find('\n') + 1));
 	}
-	// TODO wait for multiple objects
+	
+	WinUtils::wait_for_multiple_objects(m_events.size(), m_events, TRUE, INFINITE);
 
 	m_is_robbed_on = false;
 	return CommandResult::SUCCESS;

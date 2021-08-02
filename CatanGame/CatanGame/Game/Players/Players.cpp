@@ -13,7 +13,7 @@ Player::Player(const PlayerType player_type) : m_player_type(player_type), m_num
 	m_resource_cards.try_emplace(ResourceType::CLAY, 0);
 	m_resource_cards.try_emplace(ResourceType::WHEAT, 0);
 	m_resource_cards.try_emplace(ResourceType::TREE, 0);
-	m_resource_cards.try_emplace(ResourceType::STONE, 0);
+	m_resource_cards.try_emplace(ResourceType::STONE, 10);
 	m_resource_cards.try_emplace(ResourceType::SHEEP, 0);
 }
 

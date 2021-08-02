@@ -7,6 +7,7 @@
 #include "Game/Board/GameBoard/BasicBoard.h"
 #include "Server/Server.h"
 #include "Game/Players/Players.h"
+#include "Events/Event.h"
 
 constexpr uint8_t MIN_PLAYER_NUMBER = 3;
 constexpr uint8_t MAX_PLAYER_NUMBER = 4;
@@ -70,7 +71,7 @@ private:
 	Server m_server;
 	bool m_game_started;
 	std::vector<std::shared_ptr<Player>> m_players;
-
+	std::vector<Event> m_events;
 	BasicBoard m_board;
 	uint8_t m_turn_number;
 	bool m_is_robbed_on;
