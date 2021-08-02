@@ -1,6 +1,10 @@
 #pragma once
 
-#include "pch.h"
+#include <mutex>
+#include <queue>
+#include <string>
+
+#include "WinWrapers/Events/Event.h"
 
 namespace QueueUtils {
 

@@ -1,5 +1,7 @@
 #include "WinUtils.h"
 
+#include <memory>
+
 #include "Exceptions/WinExceptions.h"
 
 namespace WinUtils {
@@ -14,7 +16,7 @@ namespace WinUtils {
 			throw TimeoutException("Wait for multiple objects - Timeout error");
 		}
 		if (result == WAIT_FAILED) {
-			throw TimeoutException("Wait for multiple objects failed with error: " + std::to_string(GetLastError()));
+			throw FailedException("Wait for multiple objects failed with error: " + std::to_string(GetLastError()));
 		}
 	}
 
@@ -25,7 +27,7 @@ namespace WinUtils {
 			throw TimeoutException("Wait for single objects - Timeout error");
 		}
 		if (result == WAIT_FAILED) {
-			throw TimeoutException("Wait for single objects failed with error: " + std::to_string(GetLastError()));
+			throw FailedException("Wait for single objects failed with error: " + std::to_string(GetLastError()));
 		}
 	}
 }

@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "Exceptions/MapExceptions.h"
 
+#include <unordered_map>
+
 namespace MapUtils {
 
 	template <typename T, typename S>

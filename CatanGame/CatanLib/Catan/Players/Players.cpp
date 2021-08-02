@@ -1,6 +1,7 @@
 #include "Players.h"
 #include "Exceptions/PlayerExceptions.h"
 #include "Exceptions/MapExceptions.h"
+#include "Utils/MapUtils.h"
 
 namespace CatanUtils {
 
@@ -74,7 +75,7 @@ namespace CatanUtils {
 
 	void Player::resuce_resources(const std::unordered_map<ResourceType, uint32_t>& resources) {
 		try {
-			m_resource_cards = MapUtils::get_slash_maps(m_resource_cards, resources);
+			m_resource_cards = MapUtils::get_slashe_maps(m_resource_cards, resources);
 		}
 		catch (const MapException& e) {
 			throw WrongNumberOfSlashResourceException("You were tring to slash more resources then you have");

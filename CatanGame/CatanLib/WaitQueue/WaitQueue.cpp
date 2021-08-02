@@ -2,6 +2,7 @@
 
 #include "Exceptions/WinExceptions.h"
 #include "Exceptions/QueueExceptions.h"
+#include "WinWrapers/WinUtils.h"
 
 namespace QueueUtils {
 	
