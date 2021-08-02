@@ -20,6 +20,7 @@ enum class CommandType {
 	EDGE,
 	ROLL_DICES,
 	ROBBED_RESOURCES,
+	MOVE_KNIGHT,
 };
 
 enum class CommandResult {
@@ -45,6 +46,8 @@ public:
 
 	// function for the start of the game
 	void start_game() override;
+
+private:
 	void connect_players_and_start();
 	void handle_player(const uint8_t player_number);
 	void initialize_player_start(const uint8_t player_number);
@@ -58,6 +61,7 @@ public:
 	CommandResult handle_upgrade_settlement_to_city(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_roll_dices(const uint8_t player_number, const std::vector<std::string> data);
 	CommandResult handle_robber(const uint8_t player_number, const std::vector<std::string> data);
+	void move_knight(const uint8_t player_number);
 	
 	// functions for help
 	bool is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const;

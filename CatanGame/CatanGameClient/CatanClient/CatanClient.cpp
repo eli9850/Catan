@@ -18,7 +18,7 @@ CatanClient::CatanClient(const std::string& ip, const std::string& port_nubmer) 
 	m_resource_cards.try_emplace(ResourceType::CLAY, 4);
 	m_resource_cards.try_emplace(ResourceType::WHEAT, 2);
 	m_resource_cards.try_emplace(ResourceType::TREE, 4);
-	m_resource_cards.try_emplace(ResourceType::STONE, 10);
+	m_resource_cards.try_emplace(ResourceType::STONE, 0);
 	m_resource_cards.try_emplace(ResourceType::SHEEP, 2);
 }
 
@@ -57,6 +57,9 @@ void CatanClient::get_commands_from_server() {
 				m_command_result.push(command);
 			}
 			else if (stoi(parsed_command.at(0)) == static_cast<uint8_t>(CommandResult::TURN_AS_FINISHED)) {
+				m_command_result.push(command);
+			}
+			else if (stoi(parsed_command.at(0)) == static_cast<uint8_t>(CommandType::MOVE_KNIGHT)) {
 				m_command_result.push(command);
 			}
 			else {
@@ -306,7 +309,18 @@ void CatanClient::handle_roll_dices() {
 	if (m_command_result.front() == std::to_string(static_cast<uint8_t>(CommandResult::ROBBER))) {
 		m_command_result.pop();
 		handle_robbed_resources();
-		return;
+	}
+	while (m_command_result.empty())
+	{
+		Sleep(100);
+	}
+	if (m_command_result.front() == std::to_string(static_cast<uint8_t>(CommandType::MOVE_KNIGHT))) {
+		m_command_result.pop();
+		handle_move_knight();
+	}
+	while (m_command_result.empty())
+	{
+		Sleep(100);
 	}
 	if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS))) {
 		m_command_result.pop();
@@ -369,6 +383,36 @@ void CatanClient::rob_recources(const std::string& resources_to_robbed) {
 		auto value = stoi(split(resource_str, ",").at(1));
 		m_resource_cards.at(key) -= value;
 	}
+}
+
+void CatanClient::handle_move_knight() {
+
+	std::string row_number;
+	std::string col_number;
+	std::cout << "enter row number: ";
+	std::cin >> row_number;
+	std::cout << "enter col number: ";
+	std::cin >> col_number;
+
+	std::stringstream command;
+	command << row_number << "," << col_number;
+
+	m_client.send_data(command.str());
+	while (m_command_result.empty())
+	{
+		Sleep(100);
+	}
+	if (m_command_result.front() != std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS))) {
+		m_command_result.pop();
+		std::cout << "could not move the knight" << std::endl;
+		return;
+	}
+	m_command_result.pop();
+	std::cout << "move the knight" << std::endl;
+
+
+	//m_gui_client.update_available_resources(m_resource_cards);
+
 }
 
 std::string convert_resource_type_to_string(ResourceType resource) {

@@ -298,7 +298,7 @@ CommandResult BasicGameManager::handle_upgrade_settlement_to_city(const uint8_t 
 CommandResult BasicGameManager::handle_roll_dices(const uint8_t player_number, const std::vector<std::string> data) {
 	uint8_t first_dice = 1 + rand() % 6;
 	uint8_t second_dice = 1 + rand() % 6;
-	uint8_t dice_number = first_dice + second_dice;
+	uint32_t dice_number = first_dice + second_dice;
 
 	std::cout << "The number of the dices is: " << std::to_string(dice_number) << std::endl;
 
@@ -354,12 +354,33 @@ CommandResult BasicGameManager::handle_robber(const uint8_t player_number, const
 		m_events.at(player_number).set_event();
 		auto resource_to_robbed = m_server.recive_data(player_number);
 		m_players.at(player_number)->rob_resources(resource_to_robbed.substr(resource_to_robbed.find('\n') + 1, resource_to_robbed.size() - resource_to_robbed.find('\n') + 1));
+		std::stringstream data_to_send;
+		data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS));
+		m_server.send_data(player_number, data_to_send.str());
 	}
 	
 	WinUtils::wait_for_multiple_objects(m_events.size(), m_events, TRUE, INFINITE);
-
 	m_is_robbed_on = false;
+
+	move_knight(player_number
+	);
+
 	return CommandResult::SUCCESS;
+}
+
+void BasicGameManager::move_knight(const uint8_t player_number) {
+	std::stringstream data_to_send;
+	data_to_send << std::to_string(static_cast<uint8_t>(CommandType::MOVE_KNIGHT));
+	m_server.send_data(player_number, data_to_send.str());
+	auto knight_position_str = m_server.recive_data(player_number);
+	std::pair<uint32_t, uint32_t> knight_position(std::stoi(split(knight_position_str, ",").at(0)), std::stoi(split(knight_position_str, ",").at(1)));
+	m_board.set_robber_number(knight_position);
+
+	send_board_to_everyone();
+
+	data_to_send.str("");
+	data_to_send << std::to_string(static_cast<uint8_t>(CommandResult::SUCCESS));
+	m_server.send_data(player_number, data_to_send.str());
 }
 
 bool BasicGameManager::is_possible_to_create_settlement(const PlayerType player, const uint8_t row_number, const uint8_t col_number) const {

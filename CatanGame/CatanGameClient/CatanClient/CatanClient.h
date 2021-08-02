@@ -49,6 +49,7 @@ enum class CommandType {
 	EDGE,
 	ROLL_DICES,
 	ROBBED_RESOURCES,
+	MOVE_KNIGHT,
 };
 
 enum class CommandResult {
@@ -83,6 +84,7 @@ private:
 	void handle_finish_turn();
 	void handle_roll_dices();
 	void handle_robbed_resources();
+	void handle_move_knight();
 	void update_new_turn_info(const std::string& data);
 	std::string choose_resources_to_rob() const;
 	void rob_recources(const std::string& resources_to_robbed);
