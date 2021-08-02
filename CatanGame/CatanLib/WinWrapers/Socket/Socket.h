@@ -25,6 +25,4 @@ namespace WinUtils {
 		bool m_is_free;
 		SOCKET m_socket;
 	};
-
-
 }

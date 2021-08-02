@@ -3,8 +3,18 @@
 
 namespace WinUtils {
 
-	Event::Event() {
-		m_event = CreateEvent(nullptr, true, true, nullptr);
+	Event::Event(bool is_maual_reset, bool initial_state, LPSECURITY_ATTRIBUTES attr) {
+		
+		m_event = CreateEvent(attr, is_maual_reset, initial_state, nullptr);
+		if (m_event == nullptr) {
+			throw CreateEventException("Failed to create event with error: " + std::to_string(GetLastError()));
+		}
+	}
+
+	Event::Event(std::wstring name, bool is_maual_reset, bool initial_state, LPSECURITY_ATTRIBUTES attr) {
+		
+		m_event = CreateEvent(attr, is_maual_reset, initial_state, name.c_str());
+		
 		if (m_event == nullptr) {
 			throw CreateEventException("Failed to create event with error: " + std::to_string(GetLastError()));
 		}

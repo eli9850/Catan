@@ -14,6 +14,7 @@ namespace WinUtils {
 
 	Socket::Socket(const SOCKET socket) {
 		m_socket = socket;
+		m_is_free = false;
 	}
 
 	const SOCKET& Socket::get() const {
@@ -25,7 +26,6 @@ namespace WinUtils {
 		m_is_free = false;
 		socket.m_socket = NULL;
 		socket.m_is_free = true;
-
 	}
 
 	Socket& Socket::operator=(Socket&& socket) noexcept {
@@ -34,7 +34,6 @@ namespace WinUtils {
 		socket.m_socket = NULL;
 		socket.m_is_free = true;
 		return *this;
-
 	}
 
 	Socket::~Socket() {

@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-namespace CatanUtils {
+namespace MapUtils {
 
 	template <typename T, typename S>
 	std::unordered_map<T, S> get_combine_maps(const std::unordered_map<T, S>& first, const std::unordered_map<T, S>& second) {
