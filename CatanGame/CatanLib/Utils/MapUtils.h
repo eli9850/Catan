@@ -23,7 +23,7 @@ namespace MapUtils {
 	std::unordered_map<T, S> get_slashe_maps(const std::unordered_map<T, S>& first, const std::unordered_map<T, S>& second) {
 		std::unordered_map<T, S> result = first;
 		for (const auto& key : second) {
-			if (result.find(key.first) == result.end() || result.at(key.first) < second.at(key.first ) {
+			if (result.find(key.first) == result.end() || result.at(key.first) < second.at(key.first )) {
 				throw SlashFromEmptyValue("you are tring to slash from empty value");
 			}
 			else {
