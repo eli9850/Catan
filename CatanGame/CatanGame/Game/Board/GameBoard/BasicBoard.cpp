@@ -76,8 +76,8 @@ void BasicBoard::create_board()
 				if (resource_types.at(resource_type_index) == ResourceType::NONE) {
 					m_resources.at(i).at(j) = std::make_shared<Resource>(ResourceType::NONE, 0);
 					m_resources.at(i).at(j)->set_is_robber_on(true);
-					m_robber_resource_number.first = j;
-					m_robber_resource_number.second= i;
+					m_robber_resource_number.first = i;
+					m_robber_resource_number.second= j;
 					resource_type_index++;
 					continue;
 				}

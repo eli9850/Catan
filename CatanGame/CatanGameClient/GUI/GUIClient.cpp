@@ -530,8 +530,8 @@ void GUIClient::initialize_edge_position(sf::Sprite& edge, uint32_t x, uint32_t 
 }
 
 void GUIClient::set_robber_position(const std::string& robber_location) {
-    uint32_t x = stoi(split(robber_location, ",").at(0));
-    uint32_t y = stoi(split(robber_location, ",").at(1));
+    uint32_t x = stoi(split(robber_location, ",").at(1));
+    uint32_t y = stoi(split(robber_location, ",").at(0));
 
     auto size_of_resource_x = WINDOW_WIDTH * RESOURCE_WIDTH_IN_BACKGROUND / BACKGROUND_WIDTH;
     auto size_of_resource_y = WINDOW_HIGHT * RESOURCE_HIGHT_IN_BACKGROUND / BACKGROUND_HIGHT;
