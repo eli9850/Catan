@@ -68,7 +68,7 @@ void Player::rob_resources(const std::string& resources_to_robbed) {
 	uint8_t number_of_resources_to_rob = 0;
 
 	for (auto& resource_str : split(resources_to_robbed, ";")) {
-		auto value = stoi(split(resources_to_robbed, ",").at(1));
+		auto value = stoi(split(resource_str, ",").at(1));
 		number_of_resources_to_rob += value;
 	}
 	if (number_of_avialable_resource / 2 != number_of_resources_to_rob) {
@@ -77,7 +77,7 @@ void Player::rob_resources(const std::string& resources_to_robbed) {
 
 	for (auto& resource_str : split(resources_to_robbed, ";")) {
 		auto key = static_cast<ResourceType>(atoi(split(resource_str, ",").at(0).c_str()));
-		auto value = stoi(split(resources_to_robbed, ",").at(1));
+		auto value = stoi(split(resource_str, ",").at(1));
 		m_resource_cards.at(key) -= value;
 	}
 }
