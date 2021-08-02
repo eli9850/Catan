@@ -4,4 +4,4 @@
 
 INHERIT_EXCEPTION(PlayerException, CatanException)
 
-INHERIT_EXCEPTION(WrongNumberOfRobbedResourceException, PlayerException)
+INHERIT_EXCEPTION(WrongNumberOfSlashResourceException, PlayerException)

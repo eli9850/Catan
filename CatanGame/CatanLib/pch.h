@@ -17,6 +17,7 @@
 #include "WinWrapers/Socket/Socket.h"
 #include "WinWrapers/WinUtils.h"
 #include "WaitQueue/WaitQueue.h"
+#include "Catan/CatanConsts.h"
 
 #include <WinSock2.h>
 #include <Windows.h>
