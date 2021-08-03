@@ -3,6 +3,10 @@
 #include "Exceptions/MapExceptions.h"
 #include "Utils/MapUtils.h"
 
+#include <sstream>
+
+#include "Utils/StringUtils.h"
+
 namespace CatanUtils
 {
 	Player::Player(const PlayerType player_type) : m_player_type(player_type), m_number_of_points(0),
@@ -18,6 +22,28 @@ namespace CatanUtils
 		m_resource_cards.try_emplace(ResourceType::TREE, 0);
 		m_resource_cards.try_emplace(ResourceType::STONE, 0);
 		m_resource_cards.try_emplace(ResourceType::SHEEP, 0);
+	}
+
+	std::string Player::get_resources_str()
+	{
+		std::stringstream resources;
+		for (const auto& [key, value] : m_resource_cards)
+		{
+			resources << std::to_string(static_cast<uint32_t>(key)) << "," << std::to_string(value) <<
+				";";
+		}
+		return resources.str();
+	}
+
+	void Player::update_resources(const std::string& data)
+	{
+		for (const auto& resource_str : StringUtils::split(data, ";"))
+		{
+			const auto element_data = StringUtils::split(resource_str, ",");
+			const auto key = static_cast<CatanUtils::ResourceType>(std::stoi(element_data.at(0)));
+			const auto value = std::stoi(element_data.at(1));
+			m_resource_cards.at(key) = value;
+		}
 	}
 
 	PlayerType Player::get_player_type() const

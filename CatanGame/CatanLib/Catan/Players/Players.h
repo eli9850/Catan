@@ -12,6 +12,9 @@ namespace CatanUtils
 	public:
 		explicit Player(const PlayerType player_type);
 
+		std::string get_resources_str();
+		void update_resources(const std::string& data);
+
 		PlayerType get_player_type() const;
 		uint32_t get_number_of_points() const;
 		uint32_t get_number_of_specific_resource_card(const ResourceType resource) const;

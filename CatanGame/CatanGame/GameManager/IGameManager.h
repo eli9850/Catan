@@ -1,6 +1,7 @@
 #pragma once
 
-class IGameManager {
+class IGameManager
+{
 public:
 	virtual void start_game() = 0;
 };
