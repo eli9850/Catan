@@ -7,7 +7,7 @@ namespace CatanUtils {
 	std::unordered_map<ResourceType, uint32_t>  Settlement::get_resources(const uint32_t dice_nubmer) const {
 		std::unordered_map<ResourceType, uint32_t> result;
 
-		for (auto i = 0; i < m_resources.size(); i++)
+		for (size_t i = 0; i < m_resources.size(); i++)
 		{
 			if (m_resources.at(i)->get_resource_number() == dice_nubmer && !m_resources.at(i)->is_robber_on()) {
 				if (result.find(m_resources.at(i)->get_resource_type()) == result.end()) {

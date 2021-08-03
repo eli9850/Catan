@@ -14,7 +14,7 @@ namespace CatanUtils {
 			try {
 				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
 			}
-			catch (const WinException& e) {
+			catch (const WinException&) {
 				throw FrontQueueException("Could not get the frot element");
 			}
 
@@ -24,7 +24,7 @@ namespace CatanUtils {
 			try {
 				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
 			}
-			catch (const WinException& e) {
+			catch (const WinException&) {
 				throw FrontQueueException("Could not get the frot element");
 			}
 			return m_commands.front();
@@ -37,7 +37,7 @@ namespace CatanUtils {
 			try {
 				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
 			}
-			catch (const WinException& e) {
+			catch (const WinException&) {
 				throw PopQueueException("Could not pop queue");
 			}
 
@@ -47,7 +47,7 @@ namespace CatanUtils {
 			try {
 				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
 			}
-			catch (const WinException& e) {
+			catch (const WinException&) {
 				throw PopQueueException("Could not pop queue");
 			}
 			m_commands.pop();

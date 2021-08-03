@@ -4,6 +4,7 @@
 
 #include <array>
 #include <algorithm>
+#include <random>
 
 namespace CatanUtils {
 
