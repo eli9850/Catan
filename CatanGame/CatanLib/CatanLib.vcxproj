@@ -170,15 +170,12 @@
     <ClInclude Include="Catan\CatanConsts.h" />
     <ClInclude Include="Catan\Players\Players.h" />
     <ClInclude Include="Exceptions\BoardExceptions.h" />
-    <ClInclude Include="Exceptions\CatanServerExceptions.h" />
     <ClInclude Include="Exceptions\EventsExceptions.h" />
     <ClInclude Include="Exceptions\Exceptions.h" />
-    <ClInclude Include="Exceptions\GameManagerExceptions.h" />
     <ClInclude Include="Exceptions\PlayerExceptions.h" />
     <ClInclude Include="Exceptions\QueueExceptions.h" />
     <ClInclude Include="Exceptions\ResourceExceptions.h" />
     <ClInclude Include="Exceptions\SocketExceptions.h" />
-    <ClInclude Include="Exceptions\StructuretExceptions.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Utils\MapUtils.h" />
     <ClInclude Include="Utils\RandomUtils.h" />
