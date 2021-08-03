@@ -77,7 +77,7 @@ namespace CatanUtils {
 		try {
 			m_resource_cards = MapUtils::get_slashe_maps(m_resource_cards, resources);
 		}
-		catch (const MapException& e) {
+		catch (const MapException&) {
 			throw WrongNumberOfSlashResourceException("You were tring to slash more resources then you have");
 		}
 
