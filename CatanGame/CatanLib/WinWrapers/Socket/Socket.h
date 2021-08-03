@@ -4,25 +4,28 @@
 
 #pragma comment (lib, "Ws2_32.lib")
 
-namespace WinUtils {
+namespace CatanUtils {
 
-	// RAII class for socket
-	class Socket
-	{
-	public:
-		Socket(const SOCKET socket);
-		Socket(addrinfo* result);
-		~Socket();
+	namespace WinUtils {
 
-		Socket(const Socket&) = delete;
-		Socket(Socket&&) noexcept;
-		Socket operator=(const Socket&) = delete;
-		Socket& operator=(Socket&&) noexcept;
+		// RAII class for socket
+		class Socket
+		{
+		public:
+			Socket(const SOCKET socket);
+			Socket(addrinfo* result);
+			~Socket();
 
-		const SOCKET& get() const;
+			Socket(const Socket&) = delete;
+			Socket(Socket&&) noexcept;
+			Socket operator=(const Socket&) = delete;
+			Socket& operator=(Socket&&) noexcept;
 
-	private:
-		bool m_is_free;
-		SOCKET m_socket;
-	};
+			const SOCKET& get() const;
+
+		private:
+			bool m_is_free;
+			SOCKET m_socket;
+		};
+	}
 }

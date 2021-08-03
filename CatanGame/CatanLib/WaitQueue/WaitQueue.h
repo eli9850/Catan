@@ -6,21 +6,24 @@
 
 #include "WinWrapers/Events/Event.h"
 
-namespace QueueUtils {
+namespace CatanUtils {
 
-	class WaitQueue
-	{
+	namespace QueueUtils {
 
-	public:
-		void push(std::string command);
-		void pop();
-		std::string front();
-		std::string pop_and_front();
+		class WaitQueue
+		{
+
+		public:
+			void push(std::string command);
+			void pop();
+			std::string front();
+			std::string pop_and_front();
 
 
-	private:
-		std::mutex m_mutex;
-		std::queue<std::string> m_commands;
-		WinUtils::Event m_event;
-	};
+		private:
+			std::mutex m_mutex;
+			std::queue<std::string> m_commands;
+			WinUtils::Event m_event;
+		};
+	}
 }
