@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "Socket.h"
+#include "WinWrapers/Socket/Socket.h"
 
 constexpr uint32_t CATAN_PORT = 12345;
 
@@ -23,7 +23,7 @@ public:
 	virtual ~Server();
 
 private:
-	std::shared_ptr<Socket> m_server_socket;
-	std::vector<Socket> m_clients_sockets;
+	std::shared_ptr<CatanUtils::WinUtils::Socket> m_server_socket;
+	std::vector<CatanUtils::WinUtils::Socket> m_clients_sockets;
 };
 

@@ -19,49 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Events\Event.h" />
-    <ClInclude Include="Exceptions\EventsExceptions.h" />
-    <ClInclude Include="Exceptions\SocketExceptions.h" />
     <ClInclude Include="Server\Server.h" />
     <ClInclude Include="Exceptions\GameManagerExceptions.h" />
-    <ClInclude Include="Game\GameManager\BasicGameManager.h" />
-    <ClInclude Include="Exceptions\StructuretExceptions.h" />
-    <ClInclude Include="Game\Board\GameBoard\BasicBoard.h" />
-    <ClInclude Include="Game\Board\Structures\City.h" />
-    <ClInclude Include="Game\Board\Structures\IStructure.h" />
-    <ClInclude Include="Game\GameManager\IGameManager.h" />
-    <ClInclude Include="Game\Players\Players.h" />
-    <ClInclude Include="Game\Board\Resources\Resource.h" />
-    <ClInclude Include="Game\Board\Edges\Edge.h" />
-    <ClInclude Include="Exceptions\ResourceExceptions.h" />
-    <ClInclude Include="Game\Board\Nodes\Node.h" />
-    <ClInclude Include="Game\Board\Structures\Settlement.h" />
-    <ClInclude Include="Server\Socket.h" />
-    <ClInclude Include="Utils\Consts.h" />
-    <ClInclude Include="Utils\MapUtils.h" />
-    <ClInclude Include="Utils\StringUtils.h" />
-    <ClInclude Include="Utils\WinApi.h" />
+    <ClInclude Include="GameManager\BasicGameManager.h" />
+    <ClInclude Include="GameManager\IGameManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Events\Event.cpp" />
     <ClCompile Include="Exceptions\CatanServerExceptions.h" />
-    <ClCompile Include="Exceptions\PlayerExceptions.h" />
     <ClCompile Include="Server\Server.cpp" />
-    <ClCompile Include="Game\GameManager\BasicGameManager.cpp" />
-    <ClCompile Include="Exceptions\BoardExceptions.h" />
-    <ClCompile Include="Game\Board\GameBoard\BasicBoard.cpp" />
-    <ClCompile Include="Game\Board\Edges\Edge.cpp" />
-    <ClCompile Include="Exceptions\Exceptions.h" />
-    <ClCompile Include="Game\Board\GameBoard\IBoard.h" />
-    <ClCompile Include="Game\Board\Resources\Resource.cpp" />
-    <ClCompile Include="Game\Board\Nodes\Node.cpp" />
-    <ClCompile Include="Game\Board\Structures\City.cpp" />
-    <ClCompile Include="Game\Board\Structures\Settelement.cpp" />
-    <ClCompile Include="Game\Players\Players.cpp" />
-    <ClCompile Include="Server\Socket.cpp" />
+    <ClCompile Include="GameManager\BasicGameManager.cpp" />
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="Utils\StringUtils.cpp" />
-    <ClCompile Include="Utils\WinApi.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -134,7 +101,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)CatanLib\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -151,7 +118,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)CatanLib\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -168,7 +135,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)CatanLib\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -185,7 +152,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessToFile>false</PreprocessToFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)CatanLib\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

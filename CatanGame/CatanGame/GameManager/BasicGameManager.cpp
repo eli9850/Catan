@@ -167,7 +167,6 @@ CommandResult BasicGameManager::handle_command(const uint8_t player_number, cons
 CommandResult BasicGameManager::handle_command_when_not_your_turn(const uint8_t player_number, const std::string& data) {
 	
 	auto parsed_data = split(data, "\n");
-	CommandResult result;
 	auto& resource_to_robbed = parsed_data.at(1);
 	switch (static_cast<CommandType>(std::stoi(parsed_data.at(0))))
 	{
@@ -178,7 +177,7 @@ CommandResult BasicGameManager::handle_command_when_not_your_turn(const uint8_t 
 		try {
 			m_players.at(player_number)->rob_resources(resource_to_robbed);
 		}
-		catch (const WrongNumberOfRobbedResourceException& e) {
+		catch (const WrongNumberOfRobbedResourceException&) {
 			return CommandResult::FAILED_TO_ROB;
 		}	
 		m_events.at(player_number).set_event();
@@ -393,7 +392,7 @@ bool BasicGameManager::is_possible_to_create_settlement(const PlayerType player,
 		return false;
 	}
 	auto adjacent_edges = m_board.get_node_adjacent_edges(row_number, col_number);
-	for (auto i = 0; i < adjacent_edges.size(); i++) {
+	for (size_t i = 0; i < adjacent_edges.size(); i++) {
 		if (adjacent_edges.at(i)->get_player() == player) {
 			return true;
 		}
@@ -409,7 +408,7 @@ bool BasicGameManager::is_possible_to_create_edge(const PlayerType player, const
 		return false;
 	}
 	auto adjacent_nodes = m_board.get_edge_adjacent_nodes(row_number, col_number);
-	for (auto i = 0; i < adjacent_nodes.size(); i++)
+	for (size_t i = 0; i < adjacent_nodes.size(); i++)
 	{
 		if (adjacent_nodes.at(i)->get_structure()->get_player() == player) {
 			return true;
@@ -417,7 +416,7 @@ bool BasicGameManager::is_possible_to_create_edge(const PlayerType player, const
 
 	}
 	auto adjacent_edges = m_board.get_edge_adjacent_edges(row_number, col_number);
-	for (auto i = 0; i < adjacent_edges.size(); i++) {
+	for (size_t i = 0; i < adjacent_edges.size(); i++) {
 		if (adjacent_edges.at(i)->get_player() == player) {
 			return true;
 		}
