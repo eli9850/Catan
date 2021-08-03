@@ -6,13 +6,12 @@
 
 #include "WinWrapers/Events/Event.h"
 
-namespace CatanUtils {
-
-	namespace QueueUtils {
-
-		class WaitQueue
+namespace CatanUtils
+{
+	namespace QueueUtils
+	{
+		class WaitQueue final
 		{
-
 		public:
 			void push(std::string command);
 			void pop();

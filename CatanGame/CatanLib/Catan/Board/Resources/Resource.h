@@ -1,14 +1,16 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
+
 #include "Catan/CatanConsts.h"
 
-namespace CatanUtils {
-
+namespace CatanUtils
+{
 	class Resource final
 	{
 	public:
-		explicit Resource(const ResourceType resource_type, const uint32_t resource_number, const bool is_robber_on = false);
+		explicit Resource(const ResourceType resource_type, const uint32_t resource_number,
+		                  const bool is_robber_on = false);
 		ResourceType get_resource_type() const;
 		uint32_t get_resource_number() const;
 		bool is_robber_on() const;
@@ -19,6 +21,4 @@ namespace CatanUtils {
 		uint32_t m_resource_number;
 		bool m_is_robber_on;
 	};
-
 }
-

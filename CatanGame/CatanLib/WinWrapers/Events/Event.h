@@ -3,22 +3,25 @@
 #include <Windows.h>
 #include <string>
 
-namespace CatanUtils {
-
-	namespace WinUtils {
-
-		class Event
+namespace CatanUtils
+{
+	namespace WinUtils
+	{
+		class Event final
 		{
 		public:
-			Event(std::wstring name, bool is_maual_reset = true, bool initial_state = false, LPSECURITY_ATTRIBUTES attr = nullptr);
-			Event(bool is_maual_reset = true, bool initial_state = false, LPSECURITY_ATTRIBUTES attr = nullptr);
+			explicit Event(std::wstring name, const bool is_manual_reset = true,
+			               const bool initial_state = false,
+			               const LPSECURITY_ATTRIBUTES attr = nullptr);
+			explicit Event(const bool is_manual_reset = true, const bool initial_state = false,
+			               const LPSECURITY_ATTRIBUTES attr = nullptr);
 			void set_event();
 			void reset_event();
-			const HANDLE& get_event() const;
+			const HANDLE& get() const;
 
 		private:
 			HANDLE m_event;
-			std::string m_name;
+			std::wstring m_name;
 		};
 	}
 }

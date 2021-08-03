@@ -4,8 +4,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CatanGame", "CatanGame\CatanGame.vcxproj", "{853AB4BD-DE78-40A2-9A2A-A18DA5024655}"
+	ProjectSection(ProjectDependencies) = postProject
+		{389C939E-8C48-492B-ADA2-284C3DF00CD0} = {389C939E-8C48-492B-ADA2-284C3DF00CD0}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CatanGameClient", "CatanGameClient\CatanGameClient.vcxproj", "{128902FC-B7B0-4488-941B-D73171C4D0DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{389C939E-8C48-492B-ADA2-284C3DF00CD0} = {389C939E-8C48-492B-ADA2-284C3DF00CD0}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CatanLib", "CatanLib\CatanLib.vcxproj", "{389C939E-8C48-492B-ADA2-284C3DF00CD0}"
 EndProject

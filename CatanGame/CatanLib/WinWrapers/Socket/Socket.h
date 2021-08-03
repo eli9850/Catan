@@ -4,16 +4,16 @@
 
 #pragma comment (lib, "Ws2_32.lib")
 
-namespace CatanUtils {
-
-	namespace WinUtils {
-
+namespace CatanUtils
+{
+	namespace WinUtils
+	{
 		// RAII class for socket
-		class Socket
+		class Socket final
 		{
 		public:
-			Socket(const SOCKET socket);
-			Socket(addrinfo* result);
+			explicit Socket(const SOCKET socket);
+			explicit Socket(addrinfo* result);
 			~Socket();
 
 			Socket(const Socket&) = delete;

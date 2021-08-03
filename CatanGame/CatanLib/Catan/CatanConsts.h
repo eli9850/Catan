@@ -1,10 +1,11 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
-namespace CatanUtils {
-
-	namespace Consts {
+namespace CatanUtils
+{
+	namespace Consts
+	{
 		constexpr uint32_t MIN_RESOURCE_NUMBER = 2;
 		constexpr uint32_t MAX_RESOURCE_NUMBER = 12;
 		constexpr uint32_t NUMBER_OF_RESOURCES_IN_ROW = 5;
@@ -20,7 +21,8 @@ namespace CatanUtils {
 		constexpr uint32_t EMPTY_NODE = 0;
 	}
 
-	enum class StructureType {
+	enum class StructureType
+	{
 		NONE,
 		SETTLEMENT,
 		CITY
@@ -53,5 +55,31 @@ namespace CatanUtils {
 		RED,
 	};
 
+	enum class CommandType
+	{
+		FINISH_TURN,
+		SETTLEMENT,
+		CITY,
+		EDGE,
+		ROLL_DICES,
+		ROBBED_RESOURCES,
+		MOVE_KNIGHT,
+	};
 
+	enum class CommandResult
+	{
+		SUCCESS,
+		INFO,
+		DICES_NUMBERS,
+		NEW_TURN_INFO,
+		ROBBER,
+		YOUR_TURN,
+		NOT_YOUR_TURN,
+		ONLY_SETTLEMENT,
+		ONLY_EDGE,
+		NOT_ENOUGH_RESOURCES,
+		INVALID_PLACE,
+		TURN_AS_FINISHED,
+		FAILED_TO_ROB,
+	};
 }

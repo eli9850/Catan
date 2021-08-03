@@ -176,7 +176,6 @@
     <ClInclude Include="Exceptions\QueueExceptions.h" />
     <ClInclude Include="Exceptions\ResourceExceptions.h" />
     <ClInclude Include="Exceptions\SocketExceptions.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="Utils\MapUtils.h" />
     <ClInclude Include="Utils\RandomUtils.h" />
     <ClInclude Include="Utils\StringUtils.h" />
@@ -196,7 +195,6 @@
     <ClCompile Include="Catan\Players\Players.cpp" />
     <ClCompile Include="Exceptions\MapExceptions.h" />
     <ClCompile Include="Exceptions\WinExceptions.h" />
-    <ClCompile Include="Utils\RandomUtils.cpp" />
     <ClCompile Include="Utils\StringUtils.cpp" />
     <ClCompile Include="Utils\TimeUtils.cpp" />
     <ClCompile Include="WaitQueue\WaitQueue.cpp" />

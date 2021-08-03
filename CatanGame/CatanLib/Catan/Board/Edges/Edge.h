@@ -2,8 +2,8 @@
 
 #include "Catan/CatanConsts.h"
 
-namespace CatanUtils {
-
+namespace CatanUtils
+{
 	class Edge final
 	{
 	public:

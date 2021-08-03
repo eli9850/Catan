@@ -1,20 +1,28 @@
 #include "City.h"
 
-namespace CatanUtils {
+namespace CatanUtils
+{
+	City::City(const PlayerType player, std::vector<std::shared_ptr<Resource>> resources) : IStructure(
+		player, std::move(resources))
+	{
+	}
 
-	City::City(const PlayerType player, std::vector<std::shared_ptr<Resource>> resources) : IStructure(player, std::move(resources)) {}
-
-	std::unordered_map<ResourceType, uint32_t>  City::get_resources(const uint32_t dice_nubmer) const {
+	std::unordered_map<ResourceType, uint32_t> City::get_resources(const uint32_t dice_number) const
+	{
 		std::unordered_map<ResourceType, uint32_t> result;
 
-		for (size_t i = 0; i < m_resources.size(); i++)
+		for (const auto& resource : m_resources)
 		{
-			if (m_resources.at(i)->get_resource_number() == dice_nubmer && !m_resources.at(i)->is_robber_on()) {
-				if (result.find(m_resources.at(i)->get_resource_type()) == result.end()) {
-					result.try_emplace(m_resources.at(i)->get_resource_type(), 2);
+			if (resource->get_resource_number() == dice_number && !resource->
+				is_robber_on())
+			{
+				if (result.find(resource->get_resource_type()) == result.end())
+				{
+					result.try_emplace(resource->get_resource_type(), 2);
 				}
-				else {
-					result.at(m_resources.at(i)->get_resource_type()) = 2;
+				else
+				{
+					result.at(resource->get_resource_type()) = 2;
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 #include "Edge.h"
 
-namespace CatanUtils {
-
+namespace CatanUtils
+{
 	Edge::Edge(const PlayerType player) :
 		m_player(player)
 	{
@@ -11,5 +11,4 @@ namespace CatanUtils {
 	{
 		return m_player;
 	}
-
 }

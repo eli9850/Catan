@@ -3,10 +3,10 @@
 #include "Exceptions/MapExceptions.h"
 #include "Utils/MapUtils.h"
 
-namespace CatanUtils {
-
+namespace CatanUtils
+{
 	Player::Player(const PlayerType player_type) : m_player_type(player_type), m_number_of_points(0),
-		m_number_of_knights(0)
+	                                               m_number_of_knights(0)
 	{
 		m_development_cards.try_emplace(DevelopmentCards::ABUNDANCE_CARD, 0);
 		m_development_cards.try_emplace(DevelopmentCards::ROAD_CARD, 0);
@@ -30,17 +30,18 @@ namespace CatanUtils {
 		return m_number_of_points;
 	}
 
-	uint32_t Player::get_number_of_specific_resource_card(const ResourceType resource) const {
+	uint32_t Player::get_number_of_specific_resource_card(const ResourceType resource) const
+	{
 		return m_resource_cards.at(resource);
 	}
 
-	uint32_t Player::get_number_of_available_resources() const {
-		
+	uint32_t Player::get_number_of_available_resources() const
+	{
 		return MapUtils::get_sum_of_values(m_resource_cards);
 	}
 
-	uint32_t Player::get_number_of_development_cards() const {
-
+	uint32_t Player::get_number_of_development_cards() const
+	{
 		return MapUtils::get_sum_of_values(m_development_cards);
 	}
 
@@ -49,12 +50,14 @@ namespace CatanUtils {
 		return m_number_of_knights;
 	}
 
-	void Player::add_to_specific_resource_card(const ResourceType resource_card, uint32_t number_of_cards)
+	void Player::add_to_specific_resource_card(const ResourceType resource_card,
+	                                           const uint32_t number_of_cards)
 	{
 		m_resource_cards.at(resource_card) += number_of_cards;
 	}
 
-	void Player::remove_from_specific_resource_card(const ResourceType resource_card, uint32_t number_of_cards)
+	void Player::remove_from_specific_resource_card(const ResourceType resource_card,
+	                                                const uint32_t number_of_cards)
 	{
 		m_resource_cards.at(resource_card) -= number_of_cards;
 	}
@@ -69,19 +72,22 @@ namespace CatanUtils {
 		m_development_cards.at(development_card)--;
 	}
 
-	void Player::combine_resources(const std::unordered_map<ResourceType, uint32_t>& resources) {
+	void Player::combine_resources(const std::unordered_map<ResourceType, uint32_t>& resources)
+	{
 		m_resource_cards = MapUtils::get_combine_maps(m_resource_cards, resources);
-	}	
+	}
 
-	void Player::resuce_resources(const std::unordered_map<ResourceType, uint32_t>& resources) {
-		try {
-			m_resource_cards = MapUtils::get_slashe_maps(m_resource_cards, resources);
+	void Player::reduce_resources(const std::unordered_map<ResourceType, uint32_t>& resources)
+	{
+		try
+		{
+			m_resource_cards = MapUtils::get_slashed_maps(m_resource_cards, resources);
 		}
-		catch (const MapException&) {
-			throw WrongNumberOfSlashResourceException("You were tring to slash more resources then you have");
+		catch (const MapException&)
+		{
+			throw WrongNumberOfSlashResourceException(
+				"You were trying to slash more resources then you have");
 		}
-
-		
 	}
 
 	void Player::increase_number_of_knights()
@@ -89,7 +95,7 @@ namespace CatanUtils {
 		m_number_of_knights++;
 	}
 
-	void Player::increase_number_of_points(uint32_t number_of_points)
+	void Player::increase_number_of_points(const uint32_t number_of_points)
 	{
 		m_number_of_points += number_of_points;
 	}

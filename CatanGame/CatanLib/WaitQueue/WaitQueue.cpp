@@ -4,69 +4,75 @@
 #include "Exceptions/QueueExceptions.h"
 #include "WinWrapers/WinUtils.h"
 
-namespace CatanUtils {
-
-	namespace QueueUtils {
-
-		std::string WaitQueue::front() {
-
-			// wait for event in order to not lock the mutex
-			try {
-				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
-			}
-			catch (const WinException&) {
-				throw FrontQueueException("Could not get the frot element");
-			}
-
-			std::lock_guard<std::mutex> lock(m_mutex);
-
-			// wait for event again in order to confirm that we still have an object
-			try {
-				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
-			}
-			catch (const WinException&) {
-				throw FrontQueueException("Could not get the frot element");
-			}
-			return m_commands.front();
-
+namespace CatanUtils::QueueUtils
+{
+	std::string WaitQueue::front()
+	{
+		// wait for event in order to not lock the mutex
+		try
+		{
+			WinUtils::wait_for_single_object(m_event, INFINITE);
+		}
+		catch (const WinException&)
+		{
+			throw FrontQueueException("Could not get the front element");
 		}
 
-		void WaitQueue::pop() {
+		std::lock_guard<std::mutex> lock(m_mutex);
 
-			// wait for event in order to not lock the mutex
-			try {
-				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
-			}
-			catch (const WinException&) {
-				throw PopQueueException("Could not pop queue");
-			}
+		// wait for event again in order to confirm that we still have an object
+		try
+		{
+			WinUtils::wait_for_single_object(m_event, INFINITE);
+		}
+		catch (const WinException&)
+		{
+			throw FrontQueueException("Could not get the front element");
+		}
+		return m_commands.front();
+	}
 
-			std::lock_guard<std::mutex> lock(m_mutex);
-
-			// wait for event again in order to confirm that we still have an object
-			try {
-				WinUtils::wait_for_single_object(m_event.get_event(), INFINITE);
-			}
-			catch (const WinException&) {
-				throw PopQueueException("Could not pop queue");
-			}
-			m_commands.pop();
-			if (m_commands.empty()) {
-				m_event.reset_event();
-			}
-
+	void WaitQueue::pop()
+	{
+		// wait for event in order to not lock the mutex
+		try
+		{
+			WinUtils::wait_for_single_object(m_event, INFINITE);
+		}
+		catch (const WinException&)
+		{
+			throw PopQueueException("Could not pop queue");
 		}
 
-		void WaitQueue::push(std::string command) {
-			std::lock_guard<std::mutex> lock(m_mutex);
-			m_commands.push(std::move(command));
-			m_event.set_event();
-		}
+		std::lock_guard<std::mutex> lock(m_mutex);
 
-		std::string WaitQueue::pop_and_front() {
-			auto front_command = front();
-			pop();
-			return front_command;
+		// wait for event again in order to confirm that we still have an object
+		try
+		{
+			WinUtils::wait_for_single_object(m_event, INFINITE);
 		}
+		catch (const WinException&)
+		{
+			throw PopQueueException("Could not pop queue");
+		}
+		m_commands.pop();
+		if (m_commands.empty())
+		{
+			m_event.reset_event();
+		}
+	}
+
+	void WaitQueue::push(std::string command)
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_commands.push(std::move(command));
+		m_event.set_event();
+	}
+
+	std::string WaitQueue::pop_and_front()
+	{
+		auto front_command = front();
+		pop();
+		return front_command;
 	}
 }
