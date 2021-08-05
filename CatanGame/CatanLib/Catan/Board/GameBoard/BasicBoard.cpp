@@ -182,6 +182,11 @@ namespace CatanUtils
 		{
 			throw InvalidResourceIndex("You are trying to put the robber in an invalid node");
 		}
+		if (resource_number.first == m_robber_position.first &&
+			resource_number.second == m_robber_position.second)
+		{
+			throw InvalidResourceIndex("You are trying to put the robber in the same position");
+		}
 		m_resources.at(m_robber_position.first).at(m_robber_position.second)->set_is_robber_on(false);
 		m_resources.at(resource_number.first).at(resource_number.second)->set_is_robber_on(true);
 		m_robber_position = resource_number;

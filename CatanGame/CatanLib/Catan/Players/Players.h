@@ -12,6 +12,9 @@ namespace CatanUtils
 	public:
 		explicit Player(const PlayerType player_type);
 
+		const std::unordered_map<DevelopmentCards, uint32_t>& get_development_cards() const;
+		const std::unordered_map<ResourceType, uint32_t>& get_resource_cards() const;
+
 		std::string get_resources_str();
 		void update_resources(const std::string& data);
 

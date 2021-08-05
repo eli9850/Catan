@@ -24,6 +24,16 @@ namespace CatanUtils
 		m_resource_cards.try_emplace(ResourceType::SHEEP, 0);
 	}
 
+	const std::unordered_map<DevelopmentCards, uint32_t>& Player::get_development_cards() const
+	{
+		return m_development_cards;
+	}
+
+	const std::unordered_map<ResourceType, uint32_t>& Player::get_resource_cards() const
+	{
+		return m_resource_cards;
+	}
+
 	std::string Player::get_resources_str()
 	{
 		std::stringstream resources;

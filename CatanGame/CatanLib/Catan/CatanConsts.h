@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 namespace CatanUtils
 {
@@ -19,6 +20,7 @@ namespace CatanUtils
 		constexpr uint32_t NUMBER_OF_DESERT_RESOURCE = 0;
 		constexpr uint32_t NON_EXISTS_PLAYER_NUMBER = 5;
 		constexpr uint32_t EMPTY_NODE = 0;
+		constexpr std::string_view COMMAND_END_MAGIC = "ABCD1234";
 	}
 
 	enum class StructureType
@@ -67,6 +69,8 @@ namespace CatanUtils
 		ROB_RESOURCES,
 
 		MOVE_KNIGHT,
+
+		EXIT_GAME,
 	};
 
 	enum class ServerInfo
@@ -89,7 +93,7 @@ namespace CatanUtils
 		INVALID_STRUCTURE_PLACE,
 		NOT_ENOUGH_RESOURCES,
 		DICES_NUMBERS,
-		SUCCEEDED_ROLL_DICES,
+		ROLL_DICES_SUCCEEDED,
 		ROBBER,
 		ONLY_ROBBER,
 		KNIGHT,
