@@ -6,7 +6,7 @@
 #include <WS2tcpip.h>
 #include <iostream>
 
-constexpr std::string_view COMMAND_END_MAGIC = "ABCD1234";
+#include "Catan/CatanConsts.h"
 
 Server::Server(const std::string& port_number)
 {
@@ -80,7 +80,7 @@ std::string Server::receive_data(const uint32_t client) const
 
 void Server::send_data(const uint32_t client, const std::string& send_data) const
 {
-	const auto data_with_magic = send_data + COMMAND_END_MAGIC.data();
+	const auto data_with_magic = send_data + CatanUtils::Consts::COMMAND_END_MAGIC.data();
 	if (send(m_clients_sockets.at(client).get(), data_with_magic.c_str(), data_with_magic.size(), 0) !=
 		data_with_magic.size())
 	{

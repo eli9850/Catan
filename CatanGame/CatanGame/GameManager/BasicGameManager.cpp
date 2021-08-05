@@ -325,7 +325,7 @@ CatanUtils::ServerInfo BasicGameManager::handle_command(const uint32_t player_nu
 
 	case CatanUtils::ClientCommands::ROLL_DICES:
 		result = handle_roll_dices(player_number, parsed_data);
-		if (result == CatanUtils::ServerInfo::SUCCEEDED_ROLL_DICES)
+		if (result == CatanUtils::ServerInfo::ROLL_DICES_SUCCEEDED)
 		{
 			send_board_to_everyone();
 		}
@@ -596,7 +596,7 @@ CatanUtils::ServerInfo BasicGameManager::handle_roll_dices(const uint32_t player
 		m_players.at(static_cast<uint32_t>(player->get_player_type()))->combine_resources(result);
 		send_player_resources(player_number);
 	}
-	return CatanUtils::ServerInfo::SUCCEEDED_ROLL_DICES;
+	return CatanUtils::ServerInfo::ROLL_DICES_SUCCEEDED;
 }
 
 CatanUtils::ServerInfo BasicGameManager::handle_robber(const uint32_t player_number,
@@ -646,7 +646,7 @@ CatanUtils::ServerInfo BasicGameManager::handle_robber(const uint32_t player_num
 	}
 
 	move_knight(player_number);
-	return CatanUtils::ServerInfo::SUCCEEDED_ROLL_DICES;
+	return CatanUtils::ServerInfo::ROLL_DICES_SUCCEEDED;
 }
 
 void BasicGameManager::move_knight(const uint32_t player_number)
