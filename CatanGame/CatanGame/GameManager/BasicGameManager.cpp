@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <sstream>
+#include <set>
 
 
 #include "Exceptions/BoardExceptions.h"
@@ -29,8 +30,8 @@ BasicGameManager::BasicGameManager(const uint32_t number_of_players, const std::
 	for (uint32_t i = 0; i < number_of_players; i++)
 	{
 		m_players.at(i) = std::make_shared<CatanUtils::Player>(static_cast<CatanUtils::PlayerType>(i));
+		m_events.emplace_back(CatanUtils::WinUtils::Event(true, true));
 	}
-	m_events.resize(number_of_players);
 	m_board.create_board();
 }
 
@@ -52,6 +53,9 @@ void BasicGameManager::connect_players_and_start()
 		data_to_send << std::to_string(i);
 		m_server.send_data(i, data_to_send.str());
 	}
+
+	Sleep(1000);
+
 	std::cout << "all players connected" << std::endl;
 	send_board_to_everyone();
 
@@ -115,6 +119,9 @@ void BasicGameManager::initialize_player_start(const uint32_t player_number)
 
 	if (player_number == 0)
 	{
+		std::stringstream command;
+		command << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::GAME_STARTED));
+		m_server.send_data(player_number, command.str());
 		m_game_started = true;
 	}
 }
@@ -194,7 +201,8 @@ void BasicGameManager::create_second_settlement(const uint32_t player_number, co
 	{
 		std::stringstream data_to_send;
 		auto data = m_server.receive_data(player_number);
-		if (m_turn_number % m_players.size() != player_turn)
+		if ((m_players.size() - 1) - (m_turn_number % m_players.size()) % m_players.size() != player_turn
+		)
 		{
 			data_to_send << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::NOT_YOUR_TURN));
 			m_server.send_data(player_number, data_to_send.str());
@@ -238,13 +246,16 @@ std::unordered_map<CatanUtils::ResourceType, uint32_t> BasicGameManager::get_set
 	auto resources = m_board.get_node_adjacent_resources(row_number, column_number);
 	for (const auto& resource : resources)
 	{
-		if (settlement_resources.find(resource->get_resource_type()) != settlement_resources.end())
+		if (resource->get_resource_type() != CatanUtils::ResourceType::NONE)
 		{
-			settlement_resources.at(resource->get_resource_type()) += 1;
-		}
-		else
-		{
-			settlement_resources.try_emplace(resource->get_resource_type(), 1);
+			if (settlement_resources.find(resource->get_resource_type()) != settlement_resources.end())
+			{
+				settlement_resources.at(resource->get_resource_type()) += 1;
+			}
+			else
+			{
+				settlement_resources.try_emplace(resource->get_resource_type(), 1);
+			}
 		}
 	}
 
@@ -257,7 +268,8 @@ void BasicGameManager::create_second_edge(const uint32_t player_number, const ui
 	{
 		std::stringstream result;
 		auto data = m_server.receive_data(player_number);
-		if (m_turn_number % m_players.size() != player_turn)
+		if ((m_players.size() - 1) - (m_turn_number % m_players.size()) % m_players.size() != player_turn
+		)
 		{
 			result << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::NOT_YOUR_TURN));
 			m_server.send_data(player_number, result.str());
@@ -393,6 +405,7 @@ CatanUtils::ServerInfo BasicGameManager::rob_resources_from_player(
 			CatanUtils::StringUtils::split(resource_str, ",").at(0)));
 		m_players.at(player_number)->remove_from_specific_resource_card(resource_type, value);
 	}
+	send_player_resources(player_number);
 	return CatanUtils::ServerInfo::ROB_RESOURCES_SUCCEEDED;
 }
 
@@ -490,13 +503,13 @@ CatanUtils::ServerInfo BasicGameManager::handle_create_settlement(const uint32_t
 				}
 				m_board.create_settlement(row_number, column_number,
 				                          static_cast<CatanUtils::PlayerType>(player_number));
-				m_players.at(player_number)->add_to_specific_resource_card(
+				m_players.at(player_number)->remove_from_specific_resource_card(
 					CatanUtils::ResourceType::CLAY, 1);
-				m_players.at(player_number)->add_to_specific_resource_card(
+				m_players.at(player_number)->remove_from_specific_resource_card(
 					CatanUtils::ResourceType::WHEAT, 1);
-				m_players.at(player_number)->add_to_specific_resource_card(
+				m_players.at(player_number)->remove_from_specific_resource_card(
 					CatanUtils::ResourceType::TREE, 1);
-				m_players.at(player_number)->add_to_specific_resource_card(
+				m_players.at(player_number)->remove_from_specific_resource_card(
 					CatanUtils::ResourceType::SHEEP, 1);
 				return CatanUtils::ServerInfo::CREATE_SETTLEMENT_SUCCEEDED;
 			}
@@ -519,12 +532,13 @@ CatanUtils::ServerInfo BasicGameManager::handle_upgrade_settlement_to_city(
 	const uint32_t row_number = std::stoi(structure_place.at(0));
 	const uint32_t column_number = std::stoi(structure_place.at(1));
 
-	if (m_board.get_node(row_number, column_number)->get_structure() == nullptr)
-	{
-		return CatanUtils::ServerInfo::INVALID_STRUCTURE_PLACE;
-	}
 	try
 	{
+		if (m_board.get_node(row_number, column_number)->get_structure() == nullptr)
+		{
+			return CatanUtils::ServerInfo::INVALID_STRUCTURE_PLACE;
+		}
+
 		if (static_cast<uint32_t>(m_board.get_node(row_number, column_number)->get_structure()->
 		                                  get_player()) != player_number || m_board.
 			get_node(row_number, column_number)->get_structure_type() !=
@@ -594,7 +608,7 @@ CatanUtils::ServerInfo BasicGameManager::handle_roll_dices(const uint32_t player
 			}
 		}
 		m_players.at(static_cast<uint32_t>(player->get_player_type()))->combine_resources(result);
-		send_player_resources(player_number);
+		send_player_resources(static_cast<uint32_t>(player->get_player_type()));
 	}
 	return CatanUtils::ServerInfo::ROLL_DICES_SUCCEEDED;
 }
@@ -640,10 +654,10 @@ CatanUtils::ServerInfo BasicGameManager::handle_robber(const uint32_t player_num
 				}
 			}
 		}
-
-		CatanUtils::WinUtils::wait_for_multiple_objects(m_events, true, INFINITE);
-		m_is_robbed_on = false;
 	}
+
+	CatanUtils::WinUtils::wait_for_multiple_objects(m_events, true, INFINITE);
+	m_is_robbed_on = false;
 
 	move_knight(player_number);
 	return CatanUtils::ServerInfo::ROLL_DICES_SUCCEEDED;
@@ -682,7 +696,7 @@ void BasicGameManager::move_knight(const uint32_t player_number)
 				m_server.send_data(player_number, data_to_send.str());
 				break;
 			}
-			catch (const InvalidNodeIndex&)
+			catch (const InvalidResourceIndex&)
 			{
 				data_to_send.str("");
 				data_to_send << std::to_string(
@@ -692,7 +706,91 @@ void BasicGameManager::move_knight(const uint32_t player_number)
 		}
 	}
 
+	rob_with_knight(player_number);
+
 	send_board_to_everyone();
+}
+
+void BasicGameManager::rob_with_knight(const uint32_t player_number)
+{
+	const auto& [robber_row, robber_col] = m_board.get_robber_position();
+	auto nodes_on_robber_position = m_board.get_resource_adjacent_nodes(robber_row, robber_col);
+	std::set<CatanUtils::PlayerType> player_on_robber_resource;
+	for (const auto& node : nodes_on_robber_position)
+	{
+		if (node->get_structure() != nullptr)
+		{
+			if (node->get_structure()->get_player() !=
+				static_cast<CatanUtils::PlayerType>(player_number))
+			{
+				if (m_players.at(static_cast<uint32_t>(node->get_structure()->get_player()))->
+				              get_number_of_available_resources() != 0)
+				{
+					player_on_robber_resource.emplace(node->get_structure()->get_player());
+				}
+			}
+		}
+	}
+
+	if (player_on_robber_resource.empty())
+	{
+		return;
+	}
+
+	if (player_on_robber_resource.size() == 1)
+	{
+		auto& player_to_rob = m_players.at(static_cast<uint32_t>(*player_on_robber_resource.begin()));
+		const auto resource_to_rob = player_to_rob->get_random_resource();
+		player_to_rob->remove_from_specific_resource_card(resource_to_rob, 1);
+		m_players.at(player_number)->add_to_specific_resource_card(resource_to_rob, 1);
+		send_player_resources(player_number);
+		send_player_resources(static_cast<uint32_t>(player_to_rob->get_player_type()));
+		return;
+	}
+
+	std::stringstream data_to_send;
+	data_to_send << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::KNIGHT_ROB));
+	m_server.send_data(player_number, data_to_send.str());
+
+	while (true)
+	{
+		auto player_to_rob_command = m_server.receive_data(player_number);
+		auto parsed_data = CatanUtils::StringUtils::split(player_to_rob_command, "\n");
+		if (static_cast<CatanUtils::ClientCommands>(std::stoi(parsed_data.at(0))) !=
+			CatanUtils::ClientCommands::PLAYER_TO_ROB)
+		{
+			data_to_send.str(std::string());
+			data_to_send << std::to_string(
+				static_cast<uint32_t>(CatanUtils::ServerInfo::ONLY_PLAYER_TO_ROB));
+			m_server.send_data(player_number, data_to_send.str());
+		}
+		else
+		{
+			const auto& player_to_rob = static_cast<CatanUtils::PlayerType>
+				(std::stoi(parsed_data.at(1)));
+			if (player_on_robber_resource.find(player_to_rob) == player_on_robber_resource.end())
+			{
+				data_to_send.str("");
+				data_to_send << std::to_string(
+					static_cast<uint32_t>(CatanUtils::ServerInfo::INVALID_PLAYER_TO_ROB));
+				m_server.send_data(player_number, data_to_send.str());
+			}
+			else
+			{
+				auto& player_to_rob_from = m_players.at(static_cast<uint32_t>(player_to_rob));
+				const auto resource_to_rob = player_to_rob_from->get_random_resource();
+				player_to_rob_from->remove_from_specific_resource_card(resource_to_rob, 1);
+				m_players.at(player_number)->add_to_specific_resource_card(resource_to_rob, 1);
+				send_player_resources(player_number);
+				send_player_resources(static_cast<uint32_t>(player_to_rob_from->get_player_type()));
+				data_to_send.str(std::string());
+				data_to_send << std::to_string(
+					static_cast<uint32_t>(CatanUtils::ServerInfo::ROB_PLAYER_SUCCEEDED));
+				m_server.send_data(player_number, data_to_send.str());
+				return;
+			}
+		}
+	}
 }
 
 bool BasicGameManager::is_possible_to_create_settlement(const CatanUtils::PlayerType player,

@@ -47,6 +47,7 @@ private:
 	CatanUtils::ServerInfo handle_robber(const uint32_t player_number,
 	                                     const std::vector<std::string>& data);
 	void move_knight(const uint32_t player_number);
+	void rob_with_knight(const uint32_t player_number);
 
 	// functions for help
 	bool is_possible_to_create_settlement(const CatanUtils::PlayerType player, const uint32_t row_number,
