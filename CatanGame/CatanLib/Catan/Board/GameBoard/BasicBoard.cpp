@@ -790,21 +790,21 @@ namespace CatanUtils
 		std::vector<std::shared_ptr<Node>> adjacent_nodes;
 		if (row_number == 0)
 		{
-			adjacent_nodes.push_back(get_node(row_number, col_number + 2 + 0));
-			adjacent_nodes.push_back(get_node(row_number, col_number + 2 + 1));
-			adjacent_nodes.push_back(get_node(row_number, col_number + 2 + 2));
-			adjacent_nodes.push_back(get_node(row_number + 1, col_number + 2 + 0));
-			adjacent_nodes.push_back(get_node(row_number + 1, col_number + 2 + 1));
-			adjacent_nodes.push_back(get_node(row_number + 1, col_number + 2 + 2));
+			adjacent_nodes.push_back(get_node(row_number, col_number * 2 + 0));
+			adjacent_nodes.push_back(get_node(row_number, col_number * 2 + 1));
+			adjacent_nodes.push_back(get_node(row_number, col_number * 2 + 2));
+			adjacent_nodes.push_back(get_node(row_number + 1, col_number * 2 + 0));
+			adjacent_nodes.push_back(get_node(row_number + 1, col_number * 2 + 1));
+			adjacent_nodes.push_back(get_node(row_number + 1, col_number * 2 + 2));
 		}
 		else
 		{
-			adjacent_nodes.push_back(get_node(row_number, col_number + 2 + 1));
-			adjacent_nodes.push_back(get_node(row_number, col_number + 2 + 2));
-			adjacent_nodes.push_back(get_node(row_number, col_number + 2 + 3));
-			adjacent_nodes.push_back(get_node(row_number + 1, col_number + 2 + 0));
-			adjacent_nodes.push_back(get_node(row_number + 1, col_number + 2 + 1));
-			adjacent_nodes.push_back(get_node(row_number + 1, col_number + 2 + 2));
+			adjacent_nodes.push_back(get_node(row_number, col_number * 2 + 1));
+			adjacent_nodes.push_back(get_node(row_number, col_number * 2 + 2));
+			adjacent_nodes.push_back(get_node(row_number, col_number * 2 + 3));
+			adjacent_nodes.push_back(get_node(row_number + 1, col_number * 2 + 0));
+			adjacent_nodes.push_back(get_node(row_number + 1, col_number * 2 + 1));
+			adjacent_nodes.push_back(get_node(row_number + 1, col_number * 2 + 2));
 		}
 		return adjacent_nodes;
 	}
