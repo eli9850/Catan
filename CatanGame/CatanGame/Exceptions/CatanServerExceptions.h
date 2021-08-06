@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Exceptions.h"
+#include "Exceptions/Exceptions.h"
 
 INHERIT_EXCEPTION(CatanServerError, CatanException)
 
