@@ -39,6 +39,8 @@ namespace CatanUtils
 
 		void increase_number_of_points(const uint32_t number_of_points = 1);
 
+		ResourceType get_random_resource() const;
+
 	private:
 		PlayerType m_player_type;
 		std::unordered_map<DevelopmentCards, uint32_t> m_development_cards;

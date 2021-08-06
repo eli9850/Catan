@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "Utils/StringUtils.h"
+#include "Utils/RandomUtils.h"
 
 namespace CatanUtils
 {
@@ -134,5 +135,21 @@ namespace CatanUtils
 	void Player::increase_number_of_points(const uint32_t number_of_points)
 	{
 		m_number_of_points += number_of_points;
+	}
+
+	ResourceType Player::get_random_resource() const
+	{
+		std::vector<ResourceType> all_resources;
+		for (const auto& [resource_type, number_of_resources] : m_resource_cards)
+		{
+			for (size_t i = 0; i < number_of_resources; i++)
+			{
+				all_resources.emplace_back(resource_type);
+			}
+		}
+		const auto random_index = CatanUtils::RandomUtils::get_random_number(
+			0, get_number_of_available_resources());
+
+		return all_resources.at(random_index);
 	}
 }
