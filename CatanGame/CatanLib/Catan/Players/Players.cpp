@@ -100,6 +100,11 @@ namespace CatanUtils
 		return MapUtils::get_sum_of_values(m_resource_cards);
 	}
 
+	uint32_t Player::get_number_of_specific_development_card(const DevelopmentCards development_card) const
+	{
+		return m_development_cards.at(development_card);
+	}
+	
 	uint32_t Player::get_number_of_development_cards() const
 	{
 		return MapUtils::get_sum_of_values(m_development_cards);

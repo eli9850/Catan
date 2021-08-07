@@ -12,6 +12,7 @@
 #include "Utils/StringUtils.h"
 #include "Utils/TimeUtils.h"
 #include "WinWrapers/WinUtils.h"
+#include "Utils/RandomUtils.h"
 
 constexpr uint32_t MIN_PLAYER_NUMBER = 3;
 constexpr uint32_t MAX_PLAYER_NUMBER = 4;
@@ -344,6 +345,15 @@ CatanUtils::ServerInfo BasicGameManager::handle_command(const uint32_t player_nu
 		}
 		return result;
 
+	case CatanUtils::ClientCommands::ROAD_BUILDING_CARD:
+		result = handle_road_building_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
 	case CatanUtils::ClientCommands::CREATE_SETTLEMENT:
 		result = handle_create_settlement(player_number, parsed_data);
 		if (result == CatanUtils::ServerInfo::CREATE_SETTLEMENT_SUCCEEDED)
@@ -475,6 +485,54 @@ CatanUtils::ServerInfo BasicGameManager::handle_buy_development_card(const uint3
 	m_players.at(player_number)->remove_from_specific_resource_card(
 		CatanUtils::ResourceType::WHEAT, 1);
 	return CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED;
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_road_building_card(
+	const uint32_t player_number, const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::ROAD_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+
+	const auto& first_road_str = CatanUtils::StringUtils::split(data.at(1), ",");
+	const auto& second_road_str = CatanUtils::StringUtils::split(data.at(2), ",");
+
+	const uint32_t first_row_number = std::stoi(first_road_str.at(0));
+	const uint32_t first_column_number = std::stoi(first_road_str.at(1));
+	const uint32_t second_row_number = std::stoi(second_road_str.at(0));
+	const uint32_t second_column_number = std::stoi(second_road_str.at(1));
+
+	try
+	{
+		if (!is_possible_to_create_edge(static_cast<CatanUtils::PlayerType>(player_number),
+		                                first_row_number, first_column_number))
+		{
+			return CatanUtils::ServerInfo::INVALID_EDGE_PLACE;
+		}
+		else
+		{
+			m_board.create_edge(first_row_number, first_column_number,
+			                    static_cast<CatanUtils::PlayerType>(player_number));
+		}
+		if (!is_possible_to_create_edge(static_cast<CatanUtils::PlayerType>(player_number),
+		                                second_row_number, second_column_number))
+		{
+			return CatanUtils::ServerInfo::INVALID_EDGE_PLACE;
+		}
+		else
+		{
+			m_board.create_edge(second_row_number, second_column_number,
+			                    static_cast<CatanUtils::PlayerType>(player_number));
+		}
+		m_players.at(player_number)->decrease_development_card(CatanUtils::DevelopmentCards::ROAD_CARD);
+		return CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_EDGE_PLACE;
+	}
 }
 
 CatanUtils::ServerInfo BasicGameManager::handle_create_edge(const uint32_t player_number,

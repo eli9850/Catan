@@ -25,6 +25,7 @@ namespace CatanUtils
 		uint32_t get_number_of_points() const;
 		uint32_t get_number_of_specific_resource_card(const ResourceType resource) const;
 		uint32_t get_number_of_available_resources() const;
+		uint32_t get_number_of_specific_development_card(const DevelopmentCards development_card) const;
 		uint32_t get_number_of_development_cards() const;
 		uint32_t get_number_of_knights() const;
 

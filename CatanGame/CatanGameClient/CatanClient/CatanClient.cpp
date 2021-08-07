@@ -85,6 +85,8 @@ void CatanClient::get_commands_from_server()
 			case CatanUtils::ServerInfo::ONLY_PLAYER_TO_ROB:
 			case CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED:
 			case CatanUtils::ServerInfo::NO_MORE_DEVELOPMENT_CARDS:
+			case CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS:
+			case CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED:
 				m_command_result.push(command);
 				break;
 			default:
@@ -151,6 +153,7 @@ void CatanClient::handle_player()
 		std::cout << "5. roll dices" << std::endl;
 		std::cout << "6. print resources" << std::endl;
 		std::cout << "7. buy development card" << std::endl;
+		std::cout << "8. use development card" << std::endl;
 		std::cin >> choice;
 		switch (choice)
 		{
@@ -183,6 +186,9 @@ void CatanClient::handle_player()
 			continue;
 		case '7':
 			handle_buy_development_card();
+			continue;
+		case '8':
+			handle_use_development_card();
 			continue;
 		default:
 			continue;
@@ -241,6 +247,69 @@ void CatanClient::handle_buy_development_card()
 		return;
 	}
 	std::cout << "bought the development card" << std::endl;
+}
+
+void CatanClient::handle_use_development_card()
+{
+	char choice = 0;
+	std::cout << "enter what you want to do:" << std::endl;
+	std::cout << "1. road building card" << std::endl;
+	std::cout << "2. monopoly card" << std::endl;
+	std::cout << "3. knight card" << std::endl;
+	std::cout << "4. year of plenty card" << std::endl;
+	std::cin >> choice;
+	switch (choice)
+	{
+	case '1':
+		handle_road_building_card();
+		break;
+	case '2':
+		//handle_monopoly_card();
+		break;
+	case '3':
+		//handle_knight_card();
+		break;
+	case '4':
+		//handle_abundance_card();
+		break;
+	default:
+		break;
+	}
+}
+
+void CatanClient::handle_road_building_card()
+{
+	std::stringstream command;
+	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::ROAD_BUILDING_CARD)) <<
+		'\n';
+
+	std::string row_number;
+	std::string col_number;
+	std::cout << "enter first row number: ";
+	std::cin >> row_number;
+	std::cout << "enter first col number: ";
+	std::cin >> col_number;
+
+	command << row_number << "," << col_number << "\n";
+
+	std::cout << "enter second row number: ";
+	std::cin >> row_number;
+	std::cout << "enter second col number: ";
+	std::cin >> col_number;
+
+	command << row_number << "," << col_number << "\n";
+
+	m_client.send_data(command.str());
+	const auto server_result = m_command_result.pop_and_front();
+
+	if (server_result != std::to_string(
+		static_cast<uint32_t>(CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED)))
+	{
+		std::cout << "could not use the road building card with server info: " << server_result <<
+			std::endl;
+		return;
+	}
+	std::cout << "used the road building card" << std::endl;
 }
 
 void CatanClient::handle_build_edge()

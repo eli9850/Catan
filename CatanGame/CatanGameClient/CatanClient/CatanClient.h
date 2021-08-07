@@ -23,6 +23,11 @@ private:
 	void handle_server_commands();
 	void handle_player();
 	void handle_buy_development_card();
+	void handle_use_development_card();
+	void handle_road_building_card();
+	//void handle_monopoly_card();
+	//void handle_abundance_card();
+	//void handle_knight_card();
 	void handle_build_settlement();
 	void handle_upgrade_settlement_to_city();
 	void handle_build_edge();
