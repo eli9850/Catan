@@ -87,6 +87,8 @@ void CatanClient::get_commands_from_server()
 			case CatanUtils::ServerInfo::NO_MORE_DEVELOPMENT_CARDS:
 			case CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS:
 			case CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED:
+			case CatanUtils::ServerInfo::ABUNDANCE_CARD_SUCCEEDED:
+			case CatanUtils::ServerInfo::INVALID_RESOURCE_TYPE:
 				m_command_result.push(command);
 				break;
 			default:
@@ -270,7 +272,7 @@ void CatanClient::handle_use_development_card()
 		//handle_knight_card();
 		break;
 	case '4':
-		//handle_abundance_card();
+		handle_abundance_card();
 		break;
 	default:
 		break;
@@ -310,6 +312,36 @@ void CatanClient::handle_road_building_card()
 		return;
 	}
 	std::cout << "used the road building card" << std::endl;
+}
+
+void CatanClient::handle_abundance_card()
+{
+	std::stringstream command;
+	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::ABUNDANCE_CARD)) <<
+		'\n';
+
+	std::string resource_type;
+	std::cout << "enter first resource type: ";
+	std::cin >> resource_type;
+	
+	command << resource_type << "\n";
+
+	std::cout << "enter second resource type: ";
+	std::cin >> resource_type;
+
+	command << resource_type << "\n";
+
+	m_client.send_data(command.str());
+	const auto server_result = m_command_result.pop_and_front();
+
+	if (server_result != std::to_string(
+		static_cast<uint32_t>(CatanUtils::ServerInfo::ABUNDANCE_CARD_SUCCEEDED)))
+	{
+		std::cout << "could not use the abundance card with server info: " << server_result <<
+			std::endl;
+		return;
+	}
+	std::cout << "used the abundance card" << std::endl;
 }
 
 void CatanClient::handle_build_edge()
