@@ -90,6 +90,7 @@ void CatanClient::get_commands_from_server()
 			case CatanUtils::ServerInfo::ABUNDANCE_CARD_SUCCEEDED:
 			case CatanUtils::ServerInfo::INVALID_RESOURCE_TYPE:
 			case CatanUtils::ServerInfo::MONOPOLY_CARD_SUCCEEDED:
+			case CatanUtils::ServerInfo::KNIGHT_CARD_SUCCEEDED:
 				m_command_result.push(command);
 				break;
 			default:
@@ -270,7 +271,7 @@ void CatanClient::handle_use_development_card()
 		handle_monopoly_card();
 		break;
 	case '3':
-		//handle_knight_card();
+		handle_knight_card();
 		break;
 	case '4':
 		handle_abundance_card();
@@ -367,6 +368,41 @@ void CatanClient::handle_abundance_card()
 		return;
 	}
 	std::cout << "used the abundance card" << std::endl;
+}
+
+void CatanClient::handle_knight_card()
+{
+	std::stringstream command;
+	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::KNIGHT_CARD)) <<
+		'\n';
+
+	std::string row_number;
+	std::string col_number;
+	std::cout << "enter row number: ";
+	std::cin >> row_number;
+	std::cout << "enter col number: ";
+	std::cin >> col_number;
+
+	command << row_number << "," << col_number;
+
+	m_client.send_data(command.str());
+	auto server_result = m_command_result.pop_and_front();
+
+	if (server_result == std::to_string(
+		static_cast<uint32_t>(CatanUtils::ServerInfo::KNIGHT_ROB)))
+	{
+		handle_choose_player_to_rob();
+		server_result = m_command_result.pop_and_front();
+	}
+
+	if (server_result != std::to_string(
+		static_cast<uint32_t>(CatanUtils::ServerInfo::KNIGHT_CARD_SUCCEEDED)))
+	{
+		std::cout << "could not use the knight card with server info: " << server_result <<
+			std::endl;
+		return;
+	}
+	std::cout << "used the knight card" << std::endl;
 }
 
 void CatanClient::handle_build_edge()

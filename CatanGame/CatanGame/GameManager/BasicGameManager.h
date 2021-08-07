@@ -43,6 +43,8 @@ private:
 	                                            const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_abundance_card(const uint32_t player_number,
 	                                             const std::vector<std::string>& data);
+	CatanUtils::ServerInfo handle_knight_card(const uint32_t player_number,
+	                                          const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_create_edge(const uint32_t player_number,
 	                                          const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_create_settlement(const uint32_t player_number,

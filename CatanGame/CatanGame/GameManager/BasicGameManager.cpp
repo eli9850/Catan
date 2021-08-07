@@ -377,6 +377,15 @@ CatanUtils::ServerInfo BasicGameManager::handle_command(const uint32_t player_nu
 		}
 		return result;
 
+	case CatanUtils::ClientCommands::KNIGHT_CARD:
+		result = handle_knight_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::KNIGHT_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
 	case CatanUtils::ClientCommands::CREATE_SETTLEMENT:
 		result = handle_create_settlement(player_number, parsed_data);
 		if (result == CatanUtils::ServerInfo::CREATE_SETTLEMENT_SUCCEEDED)
@@ -615,6 +624,36 @@ CatanUtils::ServerInfo BasicGameManager::handle_abundance_card(const uint32_t pl
 	catch (const BoardError&)
 	{
 		return CatanUtils::ServerInfo::INVALID_RESOURCE_TYPE;
+	}
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_knight_card(
+	const uint32_t player_number, const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::KNIGHT_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+
+	const auto& robber_place_str = CatanUtils::StringUtils::split(data.at(1), ",");
+
+	const uint32_t row_number = std::stoi(robber_place_str.at(0));
+	const uint32_t column_number = std::stoi(robber_place_str.at(1));
+	const std::pair<uint32_t, uint32_t> new_robber_position(row_number, column_number);
+
+	try
+	{
+		m_board.set_robber_position(new_robber_position);
+		rob_with_knight(player_number);
+		
+		m_players.at(player_number)->decrease_development_card(CatanUtils::DevelopmentCards::KNIGHT_CARD);
+		m_players.at(player_number)->increase_number_of_knights();
+		return CatanUtils::ServerInfo::KNIGHT_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_RESOURCE_PLACE;
 	}
 }
 
