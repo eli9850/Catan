@@ -39,6 +39,8 @@ private:
 	CatanUtils::ServerInfo handle_buy_development_card(const uint32_t player_number);
 	CatanUtils::ServerInfo handle_road_building_card(const uint32_t player_number,
 	                                                 const std::vector<std::string>& data);
+	CatanUtils::ServerInfo handle_monopoly_card(const uint32_t player_number,
+	                                            const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_abundance_card(const uint32_t player_number,
 	                                             const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_create_edge(const uint32_t player_number,

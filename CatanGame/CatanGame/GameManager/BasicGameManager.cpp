@@ -364,6 +364,19 @@ CatanUtils::ServerInfo BasicGameManager::handle_command(const uint32_t player_nu
 		}
 		return result;
 
+	case CatanUtils::ClientCommands::MONOPOLY_CARD:
+		result = handle_monopoly_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::MONOPOLY_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			for (const auto& player : m_players)
+			{
+				send_player_resources(static_cast<uint32_t>(player->get_player_type()));
+			}
+			send_board_to_everyone();
+		}
+		return result;
+
 	case CatanUtils::ClientCommands::CREATE_SETTLEMENT:
 		result = handle_create_settlement(player_number, parsed_data);
 		if (result == CatanUtils::ServerInfo::CREATE_SETTLEMENT_SUCCEEDED)
@@ -545,6 +558,40 @@ CatanUtils::ServerInfo BasicGameManager::handle_road_building_card(
 	}
 }
 
+CatanUtils::ServerInfo BasicGameManager::handle_monopoly_card(
+	const uint32_t player_number, const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::MONOPOL_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+	try
+	{
+		const auto& resource_type = static_cast<CatanUtils::ResourceType>(std::stoi(data.at(1)));
+		uint32_t number_of_resource_to_add = 0;
+
+		for (const auto& player : m_players)
+		{
+			const auto number_of_resource_type = player->get_number_of_specific_resource_card(
+				resource_type);
+			number_of_resource_to_add += number_of_resource_type;
+			player->remove_from_specific_resource_card(resource_type, number_of_resource_type);
+		}
+
+		m_players.at(player_number)->add_to_specific_resource_card(
+			resource_type, number_of_resource_to_add);
+
+		m_players.at(player_number)->decrease_development_card(
+			CatanUtils::DevelopmentCards::MONOPOL_CARD);
+		return CatanUtils::ServerInfo::MONOPOLY_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_RESOURCE_TYPE;
+	}
+}
+
 CatanUtils::ServerInfo BasicGameManager::handle_abundance_card(const uint32_t player_number,
                                                                const std::vector<std::string>& data)
 {
@@ -560,8 +607,9 @@ CatanUtils::ServerInfo BasicGameManager::handle_abundance_card(const uint32_t pl
 
 		m_players.at(player_number)->add_to_specific_resource_card(first_resource_type, 1);
 		m_players.at(player_number)->add_to_specific_resource_card(second_resource_type, 1);
-		
-		m_players.at(player_number)->decrease_development_card(CatanUtils::DevelopmentCards::ABUNDANCE_CARD);
+
+		m_players.at(player_number)->decrease_development_card(
+			CatanUtils::DevelopmentCards::ABUNDANCE_CARD);
 		return CatanUtils::ServerInfo::ABUNDANCE_CARD_SUCCEEDED;
 	}
 	catch (const BoardError&)
