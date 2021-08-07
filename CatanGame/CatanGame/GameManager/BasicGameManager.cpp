@@ -12,6 +12,7 @@
 #include "Utils/StringUtils.h"
 #include "Utils/TimeUtils.h"
 #include "WinWrapers/WinUtils.h"
+#include "Utils/RandomUtils.h"
 
 constexpr uint32_t MIN_PLAYER_NUMBER = 3;
 constexpr uint32_t MAX_PLAYER_NUMBER = 4;
@@ -20,7 +21,8 @@ constexpr uint32_t NUMBER_TO_ROB_FROM = 8;
 constexpr uint32_t COMMAND_TYPE_INDEX = 0;
 
 BasicGameManager::BasicGameManager(const uint32_t number_of_players, const std::string& port_number):
-	m_server(port_number), m_game_started(false), m_turn_number(0), m_is_robbed_on(false)
+	m_server(port_number), m_current_development_card(0), m_game_started(false), m_turn_number(0),
+	m_is_robbed_on(false)
 {
 	if (number_of_players < MIN_PLAYER_NUMBER || number_of_players > MAX_PLAYER_NUMBER)
 	{
@@ -33,6 +35,35 @@ BasicGameManager::BasicGameManager(const uint32_t number_of_players, const std::
 		m_events.emplace_back(CatanUtils::WinUtils::Event(true, true));
 	}
 	m_board.create_board();
+
+	uint32_t current_card = 0;
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_KNIGHT_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::KNIGHT_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_MONOPOLY_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::MONOPOL_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_POINT_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::POINT_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_YEAR_OF_PLENTY_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::ABUNDANCE_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_ROAD_BUILDING_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::ROAD_CARD;
+		++current_card;
+	}
+
+	CatanUtils::RandomUtils::shuffle_array(m_development_cards);
 }
 
 void BasicGameManager::start_game()
@@ -304,6 +335,57 @@ CatanUtils::ServerInfo BasicGameManager::handle_command(const uint32_t player_nu
 	CatanUtils::ServerInfo result;
 	switch (static_cast<CatanUtils::ClientCommands>(std::stoi(parsed_data.at(0))))
 	{
+	case CatanUtils::ClientCommands::BUY_DEVELOPMENT_CARD:
+		result = handle_buy_development_card(player_number);
+		if (result == CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED)
+		{
+			send_player_resources(player_number);
+			send_player_development_cards(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
+	case CatanUtils::ClientCommands::ROAD_BUILDING_CARD:
+		result = handle_road_building_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
+	case CatanUtils::ClientCommands::ABUNDANCE_CARD:
+		result = handle_abundance_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::ABUNDANCE_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			send_player_resources(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
+	case CatanUtils::ClientCommands::MONOPOLY_CARD:
+		result = handle_monopoly_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::MONOPOLY_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			for (const auto& player : m_players)
+			{
+				send_player_resources(static_cast<uint32_t>(player->get_player_type()));
+			}
+			send_board_to_everyone();
+		}
+		return result;
+
+	case CatanUtils::ClientCommands::KNIGHT_CARD:
+		result = handle_knight_card(player_number, parsed_data);
+		if (result == CatanUtils::ServerInfo::KNIGHT_CARD_SUCCEEDED)
+		{
+			send_player_development_cards(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
 	case CatanUtils::ClientCommands::CREATE_SETTLEMENT:
 		result = handle_create_settlement(player_number, parsed_data);
 		if (result == CatanUtils::ServerInfo::CREATE_SETTLEMENT_SUCCEEDED)
@@ -407,6 +489,172 @@ CatanUtils::ServerInfo BasicGameManager::rob_resources_from_player(
 	}
 	send_player_resources(player_number);
 	return CatanUtils::ServerInfo::ROB_RESOURCES_SUCCEEDED;
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_buy_development_card(const uint32_t player_number)
+{
+	if (m_players.at(player_number)->get_number_of_specific_resource_card(
+			CatanUtils::ResourceType::STONE) < 1 ||
+		m_players.at(player_number)->get_number_of_specific_resource_card(
+			CatanUtils::ResourceType::SHEEP) < 1 ||
+		m_players.at(player_number)->get_number_of_specific_resource_card(
+			CatanUtils::ResourceType::WHEAT) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_RESOURCES;
+	}
+	if (m_current_development_card >= CatanUtils::Consts::NUMBER_OF_DEVELOPMENTS_CARDS)
+	{
+		return CatanUtils::ServerInfo::NO_MORE_DEVELOPMENT_CARDS;
+	}
+	m_players.at(player_number)->increase_development_card(
+		m_development_cards.at(m_current_development_card));
+	m_current_development_card++;
+
+	m_players.at(player_number)->remove_from_specific_resource_card(
+		CatanUtils::ResourceType::SHEEP, 1);
+	m_players.at(player_number)->remove_from_specific_resource_card(
+		CatanUtils::ResourceType::STONE, 1);
+	m_players.at(player_number)->remove_from_specific_resource_card(
+		CatanUtils::ResourceType::WHEAT, 1);
+	return CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED;
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_road_building_card(
+	const uint32_t player_number, const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::ROAD_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+
+	const auto& first_road_str = CatanUtils::StringUtils::split(data.at(1), ",");
+	const auto& second_road_str = CatanUtils::StringUtils::split(data.at(2), ",");
+
+	const uint32_t first_row_number = std::stoi(first_road_str.at(0));
+	const uint32_t first_column_number = std::stoi(first_road_str.at(1));
+	const uint32_t second_row_number = std::stoi(second_road_str.at(0));
+	const uint32_t second_column_number = std::stoi(second_road_str.at(1));
+
+	try
+	{
+		if (!is_possible_to_create_edge(static_cast<CatanUtils::PlayerType>(player_number),
+		                                first_row_number, first_column_number))
+		{
+			return CatanUtils::ServerInfo::INVALID_EDGE_PLACE;
+		}
+		else
+		{
+			m_board.create_edge(first_row_number, first_column_number,
+			                    static_cast<CatanUtils::PlayerType>(player_number));
+		}
+		if (!is_possible_to_create_edge(static_cast<CatanUtils::PlayerType>(player_number),
+		                                second_row_number, second_column_number))
+		{
+			return CatanUtils::ServerInfo::INVALID_EDGE_PLACE;
+		}
+		else
+		{
+			m_board.create_edge(second_row_number, second_column_number,
+			                    static_cast<CatanUtils::PlayerType>(player_number));
+		}
+		m_players.at(player_number)->decrease_development_card(CatanUtils::DevelopmentCards::ROAD_CARD);
+		return CatanUtils::ServerInfo::ROAD_BUILDING_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_EDGE_PLACE;
+	}
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_monopoly_card(
+	const uint32_t player_number, const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::MONOPOL_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+	try
+	{
+		const auto& resource_type = static_cast<CatanUtils::ResourceType>(std::stoi(data.at(1)));
+		uint32_t number_of_resource_to_add = 0;
+
+		for (const auto& player : m_players)
+		{
+			const auto number_of_resource_type = player->get_number_of_specific_resource_card(
+				resource_type);
+			number_of_resource_to_add += number_of_resource_type;
+			player->remove_from_specific_resource_card(resource_type, number_of_resource_type);
+		}
+
+		m_players.at(player_number)->add_to_specific_resource_card(
+			resource_type, number_of_resource_to_add);
+
+		m_players.at(player_number)->decrease_development_card(
+			CatanUtils::DevelopmentCards::MONOPOL_CARD);
+		return CatanUtils::ServerInfo::MONOPOLY_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_RESOURCE_TYPE;
+	}
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_abundance_card(const uint32_t player_number,
+                                                               const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::ABUNDANCE_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+	try
+	{
+		const auto& first_resource_type = static_cast<CatanUtils::ResourceType>(std::stoi(data.at(1)));
+		const auto& second_resource_type = static_cast<CatanUtils::ResourceType>(std::stoi(data.at(2)));
+
+		m_players.at(player_number)->add_to_specific_resource_card(first_resource_type, 1);
+		m_players.at(player_number)->add_to_specific_resource_card(second_resource_type, 1);
+
+		m_players.at(player_number)->decrease_development_card(
+			CatanUtils::DevelopmentCards::ABUNDANCE_CARD);
+		return CatanUtils::ServerInfo::ABUNDANCE_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_RESOURCE_TYPE;
+	}
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_knight_card(
+	const uint32_t player_number, const std::vector<std::string>& data)
+{
+	if (m_players.at(player_number)->get_number_of_specific_development_card(
+		CatanUtils::DevelopmentCards::KNIGHT_CARD) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_DEVELOPMENT_CARDS;
+	}
+
+	const auto& robber_place_str = CatanUtils::StringUtils::split(data.at(1), ",");
+
+	const uint32_t row_number = std::stoi(robber_place_str.at(0));
+	const uint32_t column_number = std::stoi(robber_place_str.at(1));
+	const std::pair<uint32_t, uint32_t> new_robber_position(row_number, column_number);
+
+	try
+	{
+		m_board.set_robber_position(new_robber_position);
+		rob_with_knight(player_number);
+		
+		m_players.at(player_number)->decrease_development_card(CatanUtils::DevelopmentCards::KNIGHT_CARD);
+		m_players.at(player_number)->increase_number_of_knights();
+		return CatanUtils::ServerInfo::KNIGHT_CARD_SUCCEEDED;
+	}
+	catch (const BoardError&)
+	{
+		return CatanUtils::ServerInfo::INVALID_RESOURCE_PLACE;
+	}
 }
 
 CatanUtils::ServerInfo BasicGameManager::handle_create_edge(const uint32_t player_number,
@@ -865,6 +1113,15 @@ void BasicGameManager::send_player_resources(const uint32_t player_number) const
 	std::stringstream data_to_send;
 	data_to_send << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::NEW_RESOURCES)) << "\n";
 	data_to_send << m_players.at(player_number)->get_resources_str();
+	m_server.send_data(player_number, data_to_send.str());
+}
+
+void BasicGameManager::send_player_development_cards(const uint32_t player_number) const
+{
+	std::stringstream data_to_send;
+	data_to_send << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::NEW_DEVELOPMENT_CARDS))
+		<< "\n";
+	data_to_send << m_players.at(player_number)->get_development_cards_str();
 	m_server.send_data(player_number, data_to_send.str());
 }
 

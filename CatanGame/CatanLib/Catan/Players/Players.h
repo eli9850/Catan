@@ -18,10 +18,14 @@ namespace CatanUtils
 		std::string get_resources_str();
 		void update_resources(const std::string& data);
 
+		std::string get_development_cards_str();
+		void update_development_cards(const std::string& data);
+
 		PlayerType get_player_type() const;
 		uint32_t get_number_of_points() const;
 		uint32_t get_number_of_specific_resource_card(const ResourceType resource) const;
 		uint32_t get_number_of_available_resources() const;
+		uint32_t get_number_of_specific_development_card(const DevelopmentCards development_card) const;
 		uint32_t get_number_of_development_cards() const;
 		uint32_t get_number_of_knights() const;
 

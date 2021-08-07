@@ -36,6 +36,15 @@ private:
 		const uint32_t player_number, const std::string& data);
 	CatanUtils::ServerInfo rob_resources_from_player(const uint32_t player_number,
 	                                                 const std::string& data);
+	CatanUtils::ServerInfo handle_buy_development_card(const uint32_t player_number);
+	CatanUtils::ServerInfo handle_road_building_card(const uint32_t player_number,
+	                                                 const std::vector<std::string>& data);
+	CatanUtils::ServerInfo handle_monopoly_card(const uint32_t player_number,
+	                                            const std::vector<std::string>& data);
+	CatanUtils::ServerInfo handle_abundance_card(const uint32_t player_number,
+	                                             const std::vector<std::string>& data);
+	CatanUtils::ServerInfo handle_knight_card(const uint32_t player_number,
+	                                          const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_create_edge(const uint32_t player_number,
 	                                          const std::vector<std::string>& data);
 	CatanUtils::ServerInfo handle_create_settlement(const uint32_t player_number,
@@ -56,12 +65,17 @@ private:
 	                                const uint32_t col_number) const;
 	void send_board_to_everyone() const;
 	void send_player_resources(const uint32_t player_number) const;
+	void send_player_development_cards(const uint32_t player_number) const;
+
 	void pass_turn();
 	const CatanUtils::BasicBoard& get_board() const;
 	int32_t get_winner() const;
 
 private:
 	Server m_server;
+	std::array<CatanUtils::DevelopmentCards, CatanUtils::Consts::NUMBER_OF_DEVELOPMENTS_CARDS>
+	m_development_cards;
+	uint32_t m_current_development_card;
 	std::vector<std::shared_ptr<CatanUtils::Player>> m_players;
 	std::vector<CatanUtils::WinUtils::Event> m_events;
 	CatanUtils::BasicBoard m_board;
