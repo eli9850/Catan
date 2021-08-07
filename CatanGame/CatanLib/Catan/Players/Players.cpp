@@ -17,6 +17,7 @@ namespace CatanUtils
 		m_development_cards.try_emplace(DevelopmentCards::ROAD_CARD, 0);
 		m_development_cards.try_emplace(DevelopmentCards::POINT_CARD, 0);
 		m_development_cards.try_emplace(DevelopmentCards::KNIGHT_CARD, 0);
+		m_development_cards.try_emplace(DevelopmentCards::MONOPOL_CARD, 0);
 
 		m_resource_cards.try_emplace(ResourceType::CLAY, 0);
 		m_resource_cards.try_emplace(ResourceType::WHEAT, 0);
@@ -54,6 +55,28 @@ namespace CatanUtils
 			const auto key = static_cast<CatanUtils::ResourceType>(std::stoi(element_data.at(0)));
 			const auto value = std::stoi(element_data.at(1));
 			m_resource_cards.at(key) = value;
+		}
+	}
+
+	std::string Player::get_development_cards_str()
+	{
+		std::stringstream developments_cards;
+		for (const auto& [key, value] : m_development_cards)
+		{
+			developments_cards << std::to_string(static_cast<uint32_t>(key)) << "," << std::to_string(value) <<
+				";";
+		}
+		return developments_cards.str();
+	}
+
+	void Player::update_development_cards(const std::string& data)
+	{
+		for (const auto& development_card_str : StringUtils::split(data, ";"))
+		{
+			const auto element_data = StringUtils::split(development_card_str, ",");
+			const auto key = static_cast<CatanUtils::DevelopmentCards>(std::stoi(element_data.at(0)));
+			const auto value = std::stoi(element_data.at(1));
+			m_development_cards.at(key) = value;
 		}
 	}
 

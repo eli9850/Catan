@@ -55,10 +55,10 @@ enum class TextureTypes
 	STONE_RESOURCE,
 
 	KNIGHT_CARD,
-	MONOPOLY_CARD,
 	YEAR_OF_PLENTY_CARD,
 	ROAD_CARD,
 	POINT_CARD,
+	MONOPOLY_CARD,
 
 	EDGE_RED,
 	SETTLEMENT_RED,
@@ -85,7 +85,10 @@ public:
 	void create_catan_board(const std::string& board_data);
 	void update_board(const std::string& board_data);
 	void update_dices(const uint32_t first_dice, const uint32_t second_dice);
-	void update_available_resources(const std::unordered_map<CatanUtils::ResourceType, uint32_t>& resources);
+	void update_available_resources(
+		const std::unordered_map<CatanUtils::ResourceType, uint32_t>& resources);
+	void update_available_development_cards(
+		const std::unordered_map<CatanUtils::DevelopmentCards, uint32_t>& development_cards);
 
 private:
 
@@ -106,6 +109,7 @@ private:
 	void initialize_board_robber(const std::string& robber_location);
 	void initialize_dices();
 	void initialize_available_resources();
+	void initialize_available_development_cards();
 
 	void fetch_structures(const std::string& structures);
 	void fetch_edges(const std::string& edges);
@@ -129,6 +133,9 @@ private:
 	sf::Sprite m_robber;
 	sf::Sprite m_dice_1;
 	sf::Sprite m_dice_2;
+
+	std::array<sf::Sprite, NUMBER_OF_RESOURCE_TYPES> m_available_development_cards_images;
+	std::array<sf::Text, NUMBER_OF_RESOURCE_TYPES> m_available_development_cards_texts;
 
 	std::array<sf::Sprite, NUMBER_OF_RESOURCE_TYPES> m_available_resources_images;
 	std::array<sf::Text, NUMBER_OF_RESOURCE_TYPES> m_available_resources_texts;

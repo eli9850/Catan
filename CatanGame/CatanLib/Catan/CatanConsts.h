@@ -20,6 +20,12 @@ namespace CatanUtils
 		constexpr uint32_t NUMBER_OF_DESERT_RESOURCE = 0;
 		constexpr uint32_t NON_EXISTS_PLAYER_NUMBER = 5;
 		constexpr uint32_t EMPTY_NODE = 0;
+		constexpr uint32_t NUMBER_OF_DEVELOPMENTS_CARDS = 25;
+		constexpr uint32_t NUMBER_OF_POINT_CARDS = 5;
+		constexpr uint32_t NUMBER_OF_KNIGHT_CARDS = 14;
+		constexpr uint32_t NUMBER_OF_MONOPOLY_CARDS = 2;
+		constexpr uint32_t NUMBER_OF_YEAR_OF_PLENTY_CARDS = 2;
+		constexpr uint32_t NUMBER_OF_ROAD_BUILDING_CARDS = 2;
 		constexpr std::string_view COMMAND_END_MAGIC = "ABCD1234";
 	}
 
@@ -59,6 +65,8 @@ namespace CatanUtils
 
 	enum class ClientCommands
 	{
+		BUY_DEVELOPMENT_CARD,
+		
 		CREATE_SETTLEMENT,
 		CREATE_CITY,
 		CREATE_EDGE,
@@ -82,7 +90,7 @@ namespace CatanUtils
 		YOUR_TURN,
 		NOT_YOUR_TURN,
 		ONLY_SETTLEMENT,
-		ONLY_EDGE,
+		ONLY_EDGE,	
 		CREATE_SETTLEMENT_SUCCEEDED,
 		CREATE_EDGE_SUCCEEDED,
 		NEW_RESOURCES,
@@ -106,5 +114,8 @@ namespace CatanUtils
 		ONLY_PLAYER_TO_ROB,
 		INVALID_PLAYER_TO_ROB,
 		ROB_PLAYER_SUCCEEDED,
+		BUY_DEVELOPMENT_CARD_SUCCEEDED,
+		NEW_DEVELOPMENT_CARDS,
+		NO_MORE_DEVELOPMENT_CARDS,
 	};
 }

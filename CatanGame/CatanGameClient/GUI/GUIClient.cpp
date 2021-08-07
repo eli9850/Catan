@@ -37,6 +37,7 @@ GUIClient::GUIClient()
 	initialize_textures();
 	set_background_image();
 	initialize_available_resources();
+	initialize_available_development_cards();
 }
 
 void GUIClient::initialize_textures()
@@ -44,6 +45,18 @@ void GUIClient::initialize_textures()
 	// background
 	m_textures.at(static_cast<uint32_t>(TextureTypes::BACKGROUND)).loadFromFile(
 		"Images/empty_game_board.png");
+
+	// development cards
+	m_textures.at(static_cast<uint32_t>(TextureTypes::KNIGHT_CARD)).loadFromFile(
+		"Images/development/knight.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::MONOPOLY_CARD)).loadFromFile(
+		"Images/development/monopoly.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::POINT_CARD)).loadFromFile(
+		"Images/development/point.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::YEAR_OF_PLENTY_CARD)).loadFromFile(
+		"Images/development/abundance.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::ROAD_CARD)).loadFromFile(
+		"Images/development/road.png");
 
 	// resources
 	m_textures.at(static_cast<uint32_t>(TextureTypes::DESERT)).loadFromFile(
@@ -332,6 +345,26 @@ void GUIClient::initialize_available_resources()
 		m_available_resources_texts.at(i).setPosition(m_window.getSize().x - 30.0f, 15.0f + i * 25);
 		m_available_resources_texts.at(i).setCharacterSize(24);
 		m_available_resources_texts.at(i).setStyle(sf::Text::Bold);
+	}
+}
+
+void GUIClient::initialize_available_development_cards()
+{
+	for (size_t i = 0; i < m_available_resources_images.size(); i++)
+	{
+		m_available_development_cards_images.at(i).setTexture(
+			m_textures.at(static_cast<uint32_t>(TextureTypes::KNIGHT_CARD) + i));
+		m_available_development_cards_images.at(i).setPosition(m_window.getSize().x - 100.0f,
+		                                                       440.0f + i * 25);
+		m_available_development_cards_images.at(i).setScale(0.05f, 0.035f);
+
+		m_available_development_cards_texts.at(i).setFont(m_font);
+		m_available_development_cards_texts.at(i).setFillColor(sf::Color::Black);
+		m_available_development_cards_texts.at(i).setString("0");
+		m_available_development_cards_texts.at(i).setPosition(m_window.getSize().x - 30.0f,
+		                                                      435.0f + i * 25);
+		m_available_development_cards_texts.at(i).setCharacterSize(24);
+		m_available_development_cards_texts.at(i).setStyle(sf::Text::Bold);
 	}
 }
 
@@ -656,6 +689,26 @@ void GUIClient::update_available_resources(
 		std::to_string(resources.at(CatanUtils::ResourceType::TREE)));
 }
 
+void GUIClient::update_available_development_cards(
+	const std::unordered_map<CatanUtils::DevelopmentCards, uint32_t>& development_cards)
+{
+	m_available_development_cards_texts.
+		at(static_cast<uint32_t>(CatanUtils::DevelopmentCards::POINT_CARD)).setString(
+			std::to_string(development_cards.at(CatanUtils::DevelopmentCards::POINT_CARD)));
+	m_available_development_cards_texts.
+		at(static_cast<uint32_t>(CatanUtils::DevelopmentCards::MONOPOL_CARD)).setString(
+			std::to_string(development_cards.at(CatanUtils::DevelopmentCards::MONOPOL_CARD)));
+	m_available_development_cards_texts.
+		at(static_cast<uint32_t>(CatanUtils::DevelopmentCards::ABUNDANCE_CARD)).setString(
+			std::to_string(development_cards.at(CatanUtils::DevelopmentCards::ABUNDANCE_CARD)));
+	m_available_development_cards_texts.
+		at(static_cast<uint32_t>(CatanUtils::DevelopmentCards::KNIGHT_CARD)).setString(
+			std::to_string(development_cards.at(CatanUtils::DevelopmentCards::KNIGHT_CARD)));
+	m_available_development_cards_texts.
+		at(static_cast<uint32_t>(CatanUtils::DevelopmentCards::ROAD_CARD)).setString(
+			std::to_string(development_cards.at(CatanUtils::DevelopmentCards::ROAD_CARD)));
+}
+
 void GUIClient::render_loop()
 {
 	while (m_window.isOpen())
@@ -708,6 +761,12 @@ void GUIClient::draw()
 		m_window.draw(m_available_resources_images.at(i));
 		m_window.draw(m_available_resources_texts.at(i));
 	}
+	for (size_t i = 0; i < m_available_development_cards_images.size(); i++)
+	{
+		m_window.draw(m_available_development_cards_images.at(i));
+		m_window.draw(m_available_development_cards_texts.at(i));
+	}
+
 	m_window.draw(m_robber);
 	m_window.draw(m_dice_1);
 	m_window.draw(m_dice_2);

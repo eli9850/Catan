@@ -22,6 +22,7 @@ private:
 	void get_commands_from_server();
 	void handle_server_commands();
 	void handle_player();
+	void handle_buy_development_card();
 	void handle_build_settlement();
 	void handle_upgrade_settlement_to_city();
 	void handle_build_edge();
@@ -31,6 +32,7 @@ private:
 	void handle_move_knight();
 	void handle_choose_player_to_rob();
 	void update_new_resources_info(const std::string& data);
+	void update_new_development_cards_info(const std::string& data);
 	void update_dices(const std::string& data);
 	std::string choose_resources_to_rob() const;
 

@@ -20,7 +20,8 @@ constexpr uint32_t NUMBER_TO_ROB_FROM = 8;
 constexpr uint32_t COMMAND_TYPE_INDEX = 0;
 
 BasicGameManager::BasicGameManager(const uint32_t number_of_players, const std::string& port_number):
-	m_server(port_number), m_game_started(false), m_turn_number(0), m_is_robbed_on(false)
+	m_server(port_number), m_current_development_card(0), m_game_started(false), m_turn_number(0),
+	m_is_robbed_on(false)
 {
 	if (number_of_players < MIN_PLAYER_NUMBER || number_of_players > MAX_PLAYER_NUMBER)
 	{
@@ -33,6 +34,35 @@ BasicGameManager::BasicGameManager(const uint32_t number_of_players, const std::
 		m_events.emplace_back(CatanUtils::WinUtils::Event(true, true));
 	}
 	m_board.create_board();
+
+	uint32_t current_card = 0;
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_KNIGHT_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::KNIGHT_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_MONOPOLY_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::MONOPOL_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_POINT_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::POINT_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_YEAR_OF_PLENTY_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::ABUNDANCE_CARD;
+		++current_card;
+	}
+	for (size_t i = 0; i < CatanUtils::Consts::NUMBER_OF_ROAD_BUILDING_CARDS; i++)
+	{
+		m_development_cards.at(current_card) = CatanUtils::DevelopmentCards::ROAD_CARD;
+		++current_card;
+	}
+
+	CatanUtils::RandomUtils::shuffle_array(m_development_cards);
 }
 
 void BasicGameManager::start_game()
@@ -304,6 +334,16 @@ CatanUtils::ServerInfo BasicGameManager::handle_command(const uint32_t player_nu
 	CatanUtils::ServerInfo result;
 	switch (static_cast<CatanUtils::ClientCommands>(std::stoi(parsed_data.at(0))))
 	{
+	case CatanUtils::ClientCommands::BUY_DEVELOPMENT_CARD:
+		result = handle_buy_development_card(player_number);
+		if (result == CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED)
+		{
+			send_player_resources(player_number);
+			send_player_development_cards(player_number);
+			send_board_to_everyone();
+		}
+		return result;
+
 	case CatanUtils::ClientCommands::CREATE_SETTLEMENT:
 		result = handle_create_settlement(player_number, parsed_data);
 		if (result == CatanUtils::ServerInfo::CREATE_SETTLEMENT_SUCCEEDED)
@@ -407,6 +447,34 @@ CatanUtils::ServerInfo BasicGameManager::rob_resources_from_player(
 	}
 	send_player_resources(player_number);
 	return CatanUtils::ServerInfo::ROB_RESOURCES_SUCCEEDED;
+}
+
+CatanUtils::ServerInfo BasicGameManager::handle_buy_development_card(const uint32_t player_number)
+{
+	if (m_players.at(player_number)->get_number_of_specific_resource_card(
+			CatanUtils::ResourceType::STONE) < 1 ||
+		m_players.at(player_number)->get_number_of_specific_resource_card(
+			CatanUtils::ResourceType::SHEEP) < 1 ||
+		m_players.at(player_number)->get_number_of_specific_resource_card(
+			CatanUtils::ResourceType::WHEAT) < 1)
+	{
+		return CatanUtils::ServerInfo::NOT_ENOUGH_RESOURCES;
+	}
+	if (m_current_development_card >= CatanUtils::Consts::NUMBER_OF_DEVELOPMENTS_CARDS)
+	{
+		return CatanUtils::ServerInfo::NO_MORE_DEVELOPMENT_CARDS;
+	}
+	m_players.at(player_number)->increase_development_card(
+		m_development_cards.at(m_current_development_card));
+	m_current_development_card++;
+
+	m_players.at(player_number)->remove_from_specific_resource_card(
+		CatanUtils::ResourceType::SHEEP, 1);
+	m_players.at(player_number)->remove_from_specific_resource_card(
+		CatanUtils::ResourceType::STONE, 1);
+	m_players.at(player_number)->remove_from_specific_resource_card(
+		CatanUtils::ResourceType::WHEAT, 1);
+	return CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED;
 }
 
 CatanUtils::ServerInfo BasicGameManager::handle_create_edge(const uint32_t player_number,
@@ -865,6 +933,15 @@ void BasicGameManager::send_player_resources(const uint32_t player_number) const
 	std::stringstream data_to_send;
 	data_to_send << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::NEW_RESOURCES)) << "\n";
 	data_to_send << m_players.at(player_number)->get_resources_str();
+	m_server.send_data(player_number, data_to_send.str());
+}
+
+void BasicGameManager::send_player_development_cards(const uint32_t player_number) const
+{
+	std::stringstream data_to_send;
+	data_to_send << std::to_string(static_cast<uint32_t>(CatanUtils::ServerInfo::NEW_DEVELOPMENT_CARDS))
+		<< "\n";
+	data_to_send << m_players.at(player_number)->get_development_cards_str();
 	m_server.send_data(player_number, data_to_send.str());
 }
 

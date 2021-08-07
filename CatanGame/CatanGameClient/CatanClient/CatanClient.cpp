@@ -83,6 +83,8 @@ void CatanClient::get_commands_from_server()
 			case CatanUtils::ServerInfo::INVALID_PLAYER_TO_ROB:
 			case CatanUtils::ServerInfo::KNIGHT_ROB:
 			case CatanUtils::ServerInfo::ONLY_PLAYER_TO_ROB:
+			case CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED:
+			case CatanUtils::ServerInfo::NO_MORE_DEVELOPMENT_CARDS:
 				m_command_result.push(command);
 				break;
 			default:
@@ -109,6 +111,9 @@ void CatanClient::handle_server_commands()
 			break;
 		case CatanUtils::ServerInfo::NEW_RESOURCES:
 			update_new_resources_info(data);
+			break;
+		case CatanUtils::ServerInfo::NEW_DEVELOPMENT_CARDS:
+			update_new_development_cards_info(data);
 			break;
 		case CatanUtils::ServerInfo::DICES_NUMBERS:
 			update_dices(parsed_data.at(1));
@@ -145,6 +150,7 @@ void CatanClient::handle_player()
 		std::cout << "4. finish turn" << std::endl;
 		std::cout << "5. roll dices" << std::endl;
 		std::cout << "6. print resources" << std::endl;
+		std::cout << "7. buy development card" << std::endl;
 		std::cin >> choice;
 		switch (choice)
 		{
@@ -175,6 +181,9 @@ void CatanClient::handle_player()
 			std::cout << "Clay: " << std::to_string(m_player->
 				get_number_of_specific_resource_card(CatanUtils::ResourceType::CLAY)) << std::endl;
 			continue;
+		case '7':
+			handle_buy_development_card();
+			continue;
 		default:
 			continue;
 		}
@@ -189,6 +198,14 @@ void CatanClient::update_new_resources_info(const std::string& data)
 	m_gui_client.update_available_resources(m_player->get_resource_cards());
 }
 
+void CatanClient::update_new_development_cards_info(const std::string& data)
+{
+	auto parsed_data = CatanUtils::StringUtils::split(data, "\n");
+
+	m_player->update_development_cards(parsed_data.at(1));
+	m_gui_client.update_available_development_cards(m_player->get_development_cards());
+}
+
 void CatanClient::update_dices(const std::string& data)
 {
 	const uint32_t first_dice = std::atoi(
@@ -199,6 +216,31 @@ void CatanClient::update_dices(const std::string& data)
 	std::cout << "The dice numbers are: " << std::to_string(first_dice) << "," <<
 		std::to_string(second_dice) << std::endl;
 	m_gui_client.update_dices(first_dice, second_dice);
+}
+
+void CatanClient::handle_buy_development_card()
+{
+	if (m_player->get_number_of_specific_resource_card(CatanUtils::ResourceType::STONE) < 1 ||
+		m_player->get_number_of_specific_resource_card(CatanUtils::ResourceType::WHEAT) < 1 ||
+		m_player->get_number_of_specific_resource_card(CatanUtils::ResourceType::SHEEP) < 1)
+	{
+		std::cout << "not enough source" << std::endl;
+		return;
+	}
+
+	std::stringstream command;
+	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::BUY_DEVELOPMENT_CARD));
+	m_client.send_data(command.str());
+
+	const auto server_result = m_command_result.pop_and_front();
+
+	if (server_result != std::to_string(
+		static_cast<uint32_t>(CatanUtils::ServerInfo::BUY_DEVELOPMENT_CARD_SUCCEEDED)))
+	{
+		std::cout << "could not buy development card with server info: " << server_result << std::endl;
+		return;
+	}
+	std::cout << "bought the development card" << std::endl;
 }
 
 void CatanClient::handle_build_edge()
@@ -457,7 +499,7 @@ void CatanClient::handle_move_knight()
 			break;
 		}
 		std::cout << "failed to move the knight with error: " << server_result << std::endl;
-	}	
+	}
 }
 
 void CatanClient::handle_choose_player_to_rob()
@@ -467,7 +509,7 @@ void CatanClient::handle_choose_player_to_rob()
 		std::string player_number;
 		std::cout << "enter player number: ";
 		std::cin >> player_number;
-		
+
 		std::stringstream command;
 		command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::PLAYER_TO_ROB)) <<
 			'\n';
