@@ -22,15 +22,16 @@ private:
 	void get_commands_from_server();
 	void handle_server_commands();
 	void handle_player();
+	void handle_player_gui();
 	void handle_buy_development_card();
 	void handle_use_development_card();
 	void handle_road_building_card();
 	void handle_monopoly_card();
 	void handle_abundance_card();
 	void handle_knight_card();
-	void handle_build_settlement();
+	void handle_build_settlement(const std::string& command);
 	void handle_upgrade_settlement_to_city();
-	void handle_build_edge();
+	void handle_build_edge(const std::string& command);
 	void handle_finish_turn();
 	void handle_roll_dices();
 	void handle_rob_resources();
@@ -45,6 +46,7 @@ private:
 	std::unique_ptr<CatanUtils::Player> m_player;
 	CatanUtils::QueueUtils::WaitQueue m_commands;
 	CatanUtils::QueueUtils::WaitQueue m_command_result;
+	std::shared_ptr<CatanUtils::QueueUtils::WaitQueue> m_user_commands;
 	Client m_client;
 	GUIClient m_gui_client;
 	bool m_game_is_finished;

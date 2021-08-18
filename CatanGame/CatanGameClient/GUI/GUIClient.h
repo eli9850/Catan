@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <SFML/Graphics.hpp>
 
 #include <vector>
@@ -10,8 +14,9 @@
 #include "NodeSprite.h"
 
 #include "Catan/CatanConsts.h"
+#include "WaitQueue/WaitQueue.h"
 
-constexpr uint32_t NUMBER_OF_TEXTURE_TYPES = 47;
+constexpr uint32_t NUMBER_OF_TEXTURE_TYPES = 51;
 constexpr uint32_t NUMBER_OF_EDGES_IN_A_ROW = 11;
 constexpr uint32_t NUMBER_OF_EDGES_IN_A_COLUMN = 11;
 constexpr uint32_t NUMBER_OF_NODES_IN_A_ROW = 12;
@@ -60,6 +65,8 @@ enum class TextureTypes
 	POINT_CARD,
 	MONOPOLY_CARD,
 
+	EMPTY_EDGE,
+	EMPTY_SETTLEMENT,
 	EDGE_RED,
 	SETTLEMENT_RED,
 	CITY_RED,
@@ -74,12 +81,15 @@ enum class TextureTypes
 	CITY_BLUE,
 
 	ROBBER,
+
+	ROLL_DICES,
+	FINISH_TURN,
 };
 
 class GUIClient
 {
 public:
-	GUIClient();
+	explicit GUIClient(std::shared_ptr<CatanUtils::QueueUtils::WaitQueue> user_commands);
 
 	void start_game();
 	void create_catan_board(const std::string& board_data);
@@ -108,8 +118,11 @@ private:
 	                                       const uint32_t y, const TextureTypes resource_number);
 	void initialize_board_robber(const std::string& robber_location);
 	void initialize_dices();
+	void initialize_board();
 	void initialize_available_resources();
 	void initialize_available_development_cards();
+	void initialize_roll_dices();
+	void initialize_finish_turn();
 
 	void fetch_structures(const std::string& structures);
 	void fetch_edges(const std::string& edges);
@@ -125,6 +138,11 @@ private:
 	void draw();
 
 private:
+
+	bool m_is_rolled_dices;
+	
+	std::shared_ptr<CatanUtils::QueueUtils::WaitQueue> m_user_commands;
+	
 	sf::RenderWindow m_window;
 	sf::Font m_font;
 	std::array<sf::Texture, NUMBER_OF_TEXTURE_TYPES> m_textures;
@@ -133,6 +151,8 @@ private:
 	sf::Sprite m_robber;
 	sf::Sprite m_dice_1;
 	sf::Sprite m_dice_2;
+	sf::Sprite m_roll_dice;
+	sf::Sprite m_finish_turn;
 
 	std::array<sf::Sprite, NUMBER_OF_RESOURCE_TYPES> m_available_development_cards_images;
 	std::array<sf::Text, NUMBER_OF_RESOURCE_TYPES> m_available_development_cards_texts;

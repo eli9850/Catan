@@ -6,7 +6,8 @@
 #include "Utils/StringUtils.h"
 
 CatanClient::CatanClient(const std::string& ip, const std::string& port_number) :
-	m_client(ip, port_number), m_game_is_finished(false)
+	m_user_commands(std::make_shared<CatanUtils::QueueUtils::WaitQueue>()), m_client(ip, port_number),
+	m_gui_client(m_user_commands), m_game_is_finished(false)
 {
 	const auto connect_info = m_client.receive_data();
 	auto parsed_data = CatanUtils::StringUtils::split(connect_info, "\n");
@@ -38,13 +39,15 @@ void CatanClient::start_game()
 	const auto board = data.substr(2, data.size() - 2);
 	m_gui_client.create_catan_board(board);
 
-	std::thread handle_player_thread(&CatanClient::handle_player, this);
+	std::thread handle_player_gui_thread(&CatanClient::handle_player_gui, this);
+	//std::thread handle_player_thread(&CatanClient::handle_player, this);
 	std::thread handle_server_commands_thread(&CatanClient::handle_server_commands, this);
 
 	m_gui_client.start_game();
 
 	get_commands_thread.join();
-	handle_player_thread.join();
+	//handle_player_thread.join();
+	handle_player_gui_thread.join();
 	handle_server_commands_thread.join();
 }
 
@@ -143,62 +146,89 @@ void CatanClient::handle_server_commands()
 	}
 }
 
-void CatanClient::handle_player()
+void CatanClient::handle_player_gui()
+
 {
-	char choice = 0;
 	while (!m_game_is_finished)
 	{
 		WaitForSingleObject(m_is_my_turn.get(), INFINITE);
-		std::cout << "enter what you want to do:" << std::endl;
-		std::cout << "1. build settlement" << std::endl;
-		std::cout << "2. upgrade settlement to city" << std::endl;
-		std::cout << "3. build edge" << std::endl;
-		std::cout << "4. finish turn" << std::endl;
-		std::cout << "5. roll dices" << std::endl;
-		std::cout << "6. print resources" << std::endl;
-		std::cout << "7. buy development card" << std::endl;
-		std::cout << "8. use development card" << std::endl;
-		std::cin >> choice;
-		switch (choice)
+		const auto command = m_user_commands->pop_and_front();
+		switch (static_cast<CatanUtils::ClientCommands>(std::stoi(command)))
 		{
-		case '1':
-			handle_build_settlement();
-			continue;
-		case '2':
-			handle_upgrade_settlement_to_city();
-			continue;
-		case '3':
-			handle_build_edge();
-			continue;
-		case '4':
-			handle_finish_turn();
-			continue;
-		case '5':
+		case CatanUtils::ClientCommands::ROLL_DICES:
 			handle_roll_dices();
 			continue;
-		case '6':
-			std::cout << "Tree: " << std::to_string(m_player->
-				get_number_of_specific_resource_card(CatanUtils::ResourceType::TREE)) << std::endl;
-			std::cout << "Sheep: " << std::to_string(m_player->
-				get_number_of_specific_resource_card(CatanUtils::ResourceType::SHEEP)) << std::endl;
-			std::cout << "Stone: " << std::to_string(m_player->
-				get_number_of_specific_resource_card(CatanUtils::ResourceType::STONE)) << std::endl;
-			std::cout << "Wheat: " << std::to_string(m_player->
-				get_number_of_specific_resource_card(CatanUtils::ResourceType::WHEAT)) << std::endl;
-			std::cout << "Clay: " << std::to_string(m_player->
-				get_number_of_specific_resource_card(CatanUtils::ResourceType::CLAY)) << std::endl;
+		case CatanUtils::ClientCommands::FINISH_TURN:
+			handle_finish_turn();
 			continue;
-		case '7':
-			handle_buy_development_card();
+		case CatanUtils::ClientCommands::CREATE_EDGE:
+			handle_build_edge(command);
 			continue;
-		case '8':
-			handle_use_development_card();
+		case CatanUtils::ClientCommands::CREATE_SETTLEMENT:
+			handle_build_settlement(command);
 			continue;
 		default:
 			continue;
 		}
 	}
 }
+
+// void CatanClient::handle_player()
+// {
+// 	char choice = 0;
+// 	while (!m_game_is_finished)
+// 	{
+// 		WaitForSingleObject(m_is_my_turn.get(), INFINITE);
+// 		std::cout << "enter what you want to do:" << std::endl;
+// 		std::cout << "1. build settlement" << std::endl;
+// 		std::cout << "2. upgrade settlement to city" << std::endl;
+// 		std::cout << "3. build edge" << std::endl;
+// 		std::cout << "4. finish turn" << std::endl;
+// 		std::cout << "5. roll dices" << std::endl;
+// 		std::cout << "6. print resources" << std::endl;
+// 		std::cout << "7. buy development card" << std::endl;
+// 		std::cout << "8. use development card" << std::endl;
+// 		std::cin >> choice;
+// 		switch (choice)
+// 		{
+// 		case '1':
+// 			handle_build_settlement();
+// 			continue;
+// 		case '2':
+// 			handle_upgrade_settlement_to_city();
+// 			continue;
+// 		case '3':
+// 			handle_build_edge();
+// 			continue;
+// 		case '4':
+// 			handle_finish_turn();
+// 			continue;
+// 		case '5':
+// 			handle_roll_dices();
+// 			continue;
+// 		case '6':
+// 			std::cout << "Tree: " << std::to_string(m_player->
+// 				get_number_of_specific_resource_card(CatanUtils::ResourceType::TREE)) << std::endl;
+// 			std::cout << "Sheep: " << std::to_string(m_player->
+// 				get_number_of_specific_resource_card(CatanUtils::ResourceType::SHEEP)) << std::endl;
+// 			std::cout << "Stone: " << std::to_string(m_player->
+// 				get_number_of_specific_resource_card(CatanUtils::ResourceType::STONE)) << std::endl;
+// 			std::cout << "Wheat: " << std::to_string(m_player->
+// 				get_number_of_specific_resource_card(CatanUtils::ResourceType::WHEAT)) << std::endl;
+// 			std::cout << "Clay: " << std::to_string(m_player->
+// 				get_number_of_specific_resource_card(CatanUtils::ResourceType::CLAY)) << std::endl;
+// 			continue;
+// 		case '7':
+// 			handle_buy_development_card();
+// 			continue;
+// 		case '8':
+// 			handle_use_development_card();
+// 			continue;
+// 		default:
+// 			continue;
+// 		}
+// 	}
+// }
 
 void CatanClient::update_new_resources_info(const std::string& data)
 {
@@ -349,7 +379,7 @@ void CatanClient::handle_abundance_card()
 	std::string resource_type;
 	std::cout << "enter first resource type: ";
 	std::cin >> resource_type;
-	
+
 	command << resource_type << "\n";
 
 	std::cout << "enter second resource type: ";
@@ -405,7 +435,7 @@ void CatanClient::handle_knight_card()
 	std::cout << "used the knight card" << std::endl;
 }
 
-void CatanClient::handle_build_edge()
+void CatanClient::handle_build_edge(const std::string& command)
 {
 	if (m_is_game_start)
 	{
@@ -421,18 +451,18 @@ void CatanClient::handle_build_edge()
 		m_is_my_turn.reset_event();
 	}
 
-	std::string row_number;
-	std::string col_number;
-	std::cout << "enter row number: ";
-	std::cin >> row_number;
-	std::cout << "enter col number: ";
-	std::cin >> col_number;
+	// std::string row_number;
+	// std::string col_number;
+	// std::cout << "enter row number: ";
+	// std::cin >> row_number;
+	// std::cout << "enter col number: ";
+	// std::cin >> col_number;
+	//
+	// std::stringstream command;
+	// command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::CREATE_EDGE)) << '\n';
+	// command << row_number << "," << col_number;
 
-	std::stringstream command;
-	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::CREATE_EDGE)) << '\n';
-	command << row_number << "," << col_number;
-
-	m_client.send_data(command.str());
+	m_client.send_data(command);
 	const auto server_result = m_command_result.pop_and_front();
 
 	if (server_result != std::to_string(
@@ -448,7 +478,7 @@ void CatanClient::handle_build_edge()
 	std::cout << "create the edge" << std::endl;
 }
 
-void CatanClient::handle_build_settlement()
+void CatanClient::handle_build_settlement(const std::string& command)
 {
 	if (m_is_game_start)
 	{
@@ -462,19 +492,19 @@ void CatanClient::handle_build_settlement()
 		}
 	}
 
-	std::string row_number;
-	std::string col_number;
-	std::cout << "enter row number: ";
-	std::cin >> row_number;
-	std::cout << "enter col number: ";
-	std::cin >> col_number;
+	// std::string row_number;
+	// std::string col_number;
+	// std::cout << "enter row number: ";
+	// std::cin >> row_number;
+	// std::cout << "enter col number: ";
+	// std::cin >> col_number;
+	//
+	// std::stringstream command;
+	// command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::CREATE_SETTLEMENT)) <<
+	// 	'\n';
+	// command << row_number << "," << col_number;
 
-	std::stringstream command;
-	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::CREATE_SETTLEMENT)) <<
-		'\n';
-	command << row_number << "," << col_number;
-
-	m_client.send_data(command.str());
+	m_client.send_data(command);
 	const auto server_result = m_command_result.pop_and_front();
 
 	if (server_result != std::to_string(
@@ -489,7 +519,7 @@ void CatanClient::handle_build_settlement()
 void CatanClient::handle_finish_turn()
 {
 	std::stringstream command;
-	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::FINISH_TURN)) << '\n';
+	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::FINISH_TURN));
 	m_client.send_data(command.str());
 
 	const auto server_result = m_command_result.pop_and_front();
@@ -540,7 +570,7 @@ void CatanClient::handle_upgrade_settlement_to_city()
 void CatanClient::handle_roll_dices()
 {
 	std::stringstream command;
-	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::ROLL_DICES)) << '\n';
+	command << std::to_string(static_cast<uint32_t>(CatanUtils::ClientCommands::ROLL_DICES));
 
 	m_client.send_data(command.str());
 

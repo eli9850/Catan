@@ -26,7 +26,7 @@ BasicGameManager::BasicGameManager(const uint32_t number_of_players, const std::
 {
 	if (number_of_players < MIN_PLAYER_NUMBER || number_of_players > MAX_PLAYER_NUMBER)
 	{
-		throw InvalidPlayersNumber("You enter invalid number of players");
+		//throw InvalidPlayersNumber("You enter invalid number of players");
 	}
 	m_players.resize(number_of_players);
 	for (uint32_t i = 0; i < number_of_players; i++)

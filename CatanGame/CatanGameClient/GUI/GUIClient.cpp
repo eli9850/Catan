@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "Utils/StringUtils.h"
-#include "CatanClient/CatanClient.h"
+#include <sstream>
 
 constexpr uint32_t NUMBER_OF_RESOURCES_IN_BOARD = 19;
 constexpr std::string_view WINDOW_NAME = "Eli's Catan";
@@ -30,14 +30,18 @@ constexpr float FIRST_POSITION_OF_STRUCTURE_Y = 190.0f;
 
 constexpr uint32_t NONE_PLAYER = 5;
 
-GUIClient::GUIClient()
+GUIClient::GUIClient(std::shared_ptr<CatanUtils::QueueUtils::WaitQueue> user_commands):
+	m_is_rolled_dices(false), m_user_commands(std::move(user_commands))
 {
 	m_font.loadFromFile("Fonts\\sansation.ttf");
 	m_window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_NAME.data());
 	initialize_textures();
 	set_background_image();
+	initialize_board();
 	initialize_available_resources();
 	initialize_available_development_cards();
+	initialize_roll_dices();
+	initialize_finish_turn();
 }
 
 void GUIClient::initialize_textures()
@@ -127,6 +131,16 @@ void GUIClient::initialize_textures()
 		"Images/objects/city_yellow.png");
 	m_textures.at(static_cast<uint32_t>(TextureTypes::CITY_RED)).loadFromFile(
 		"Images/objects/city_red.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::EMPTY_EDGE)).loadFromFile(
+		"Images/objects/empty_edge.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::EMPTY_SETTLEMENT)).loadFromFile(
+		"Images/objects/empty_settlement.png");
+
+	//windows objects
+	m_textures.at(static_cast<uint32_t>(TextureTypes::ROLL_DICES)).loadFromFile(
+		"Images/window_objects/roll_dices.png");
+	m_textures.at(static_cast<uint32_t>(TextureTypes::FINISH_TURN)).loadFromFile(
+		"Images/window_objects/finish_turn.png");
 }
 
 void GUIClient::set_background_image()
@@ -297,8 +311,8 @@ void GUIClient::initialize_resource_number_sprite(const uint32_t resource_index,
 
 void GUIClient::initialize_board_robber(const std::string& robber_location)
 {
-	const uint32_t x = std::stoi(CatanUtils::StringUtils::split(robber_location, ",").at(0));
-	const uint32_t y = std::stoi(CatanUtils::StringUtils::split(robber_location, ",").at(1));
+	const uint32_t y = std::stoi(CatanUtils::StringUtils::split(robber_location, ",").at(0));
+	const uint32_t x = std::stoi(CatanUtils::StringUtils::split(robber_location, ",").at(1));
 
 	m_robber.setTexture(m_textures.at(static_cast<uint32_t>(TextureTypes::ROBBER)));
 
@@ -328,6 +342,30 @@ void GUIClient::initialize_dices()
 
 	m_dice_1.setPosition(0, 0);
 	m_dice_2.setPosition(50, 0);
+}
+
+void GUIClient::initialize_board()
+{
+	for (uint32_t y = 0; y < m_board_structures.size(); y++)
+	{
+		for (uint32_t x = 0; x < m_board_structures.at(y).size(); x++)
+		{
+			m_board_structures.at(y).at(x).set_scale(0.09f, 0.09f);
+			initialize_structure_position(m_board_structures.at(y).at(x), x, y);
+			m_board_structures.at(y).at(x).set_texture(
+				m_textures.at(static_cast<uint32_t>(TextureTypes::EMPTY_SETTLEMENT)));
+		}
+	}
+	for (uint32_t y = 0; y < m_board_edges.size(); y++)
+	{
+		for (uint32_t x = 0; x < m_board_edges.at(y).size(); x++)
+		{
+			m_board_edges.at(y).at(x).setScale(0.6f, 0.6f);
+			initialize_edge_position(m_board_edges.at(y).at(x), x, y);
+			m_board_edges.at(y).at(x).setTexture(
+				m_textures.at(static_cast<uint32_t>(TextureTypes::EMPTY_EDGE)));
+		}
+	}
 }
 
 void GUIClient::initialize_available_resources()
@@ -366,6 +404,24 @@ void GUIClient::initialize_available_development_cards()
 		m_available_development_cards_texts.at(i).setCharacterSize(24);
 		m_available_development_cards_texts.at(i).setStyle(sf::Text::Bold);
 	}
+}
+
+void GUIClient::initialize_roll_dices()
+{
+	m_roll_dice.setTexture(m_textures.at(static_cast<uint32_t>(TextureTypes::ROLL_DICES)));
+
+	m_roll_dice.setScale(0.17f, 0.2f);
+
+	m_roll_dice.setPosition(0, 50);
+}
+
+void GUIClient::initialize_finish_turn()
+{
+	m_finish_turn.setTexture(m_textures.at(static_cast<uint32_t>(TextureTypes::FINISH_TURN)));
+
+	m_finish_turn.setScale(0.17f, 0.2f);
+
+	m_finish_turn.setPosition(50, 50);
 }
 
 void GUIClient::start_game()
@@ -447,9 +503,6 @@ void GUIClient::add_new_settlement(const uint32_t x, const uint32_t y, const uin
 	default:
 		break;
 	}
-
-	m_board_structures.at(y).at(x).set_scale(0.09f, 0.09f);
-	initialize_structure_position(m_board_structures.at(y).at(x), x, y);
 }
 
 void GUIClient::initialize_structure_position(NodeSprite& structure, uint32_t x, const uint32_t y)
@@ -563,7 +616,7 @@ void GUIClient::fetch_edges(const std::string& edges)
 			x = 0;
 		}
 		const uint32_t edge_player = std::stoi(edge);
-		if (edge_player == NONE_PLAYER || m_board_edges.at(y).at(x).getTexture() != nullptr)
+		if (edge_player == NONE_PLAYER)
 		{
 			x++;
 			continue;
@@ -596,9 +649,6 @@ void GUIClient::add_new_edge(const uint32_t x, const uint32_t y, const uint32_t 
 	default:
 		break;
 	}
-
-	m_board_edges.at(y).at(x).setScale(0.6f, 0.6f);
-	initialize_edge_position(m_board_edges.at(y).at(x), x, y);
 }
 
 void GUIClient::initialize_edge_position(sf::Sprite& edge, uint32_t x, const uint32_t y)
@@ -725,6 +775,60 @@ void GUIClient::render_loop()
 				std::cout << "########### mouse : " << sf::Mouse::getPosition(m_window).x << "," <<
 					sf::Mouse::getPosition(m_window).y << std::endl;
 			}
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+				const auto mouse_position = sf::Mouse::getPosition(m_window);
+				if (m_roll_dice.getGlobalBounds().contains(mouse_position.x, mouse_position.y))
+				{
+					if (!m_is_rolled_dices)
+					{
+						m_user_commands->push(std::to_string(
+							static_cast<uint32_t>(CatanUtils::ClientCommands::ROLL_DICES)));
+						//m_is_rolled_dices = true;
+					}
+				}
+				if (m_finish_turn.getGlobalBounds().contains(mouse_position.x, mouse_position.y))
+				{
+					m_user_commands->push(std::to_string(
+						static_cast<uint32_t>(CatanUtils::ClientCommands::FINISH_TURN)));
+					//m_is_rolled_dices = false;
+				}
+				for (uint32_t y = 0; y < m_board_structures.size(); y++)
+				{
+					for (uint32_t x = 0; x < m_board_structures.at(y).size(); x++)
+					{
+						auto a = m_board_structures.at(y).at(x).get_sprite().getGlobalBounds();
+						if (m_board_structures.at(y).at(x).get_sprite().getGlobalBounds().contains(
+							mouse_position.x, mouse_position.y))
+						{
+							std::stringstream command;
+							command << std::to_string(
+								static_cast<uint32_t>(CatanUtils::ClientCommands::CREATE_SETTLEMENT));
+							command << "\n";
+							command << std::to_string(y) << "," << std::to_string(x);
+
+							m_user_commands->push(command.str());
+						}
+					}
+				}
+				for (uint32_t y = 0; y < m_board_edges.size(); y++)
+				{
+					for (uint32_t x = 0; x < m_board_edges.at(y).size(); x++)
+					{
+						if (m_board_edges.at(y).at(x).getGlobalBounds().contains(
+							mouse_position.x, mouse_position.y))
+						{
+							std::stringstream command;
+							command << std::to_string(
+								static_cast<uint32_t>(CatanUtils::ClientCommands::CREATE_EDGE));
+							command << "\n";
+							command << std::to_string(y) << "," << std::to_string(x);
+
+							m_user_commands->push(command.str());
+						}
+					}
+				}
+			}
 		}
 		draw();
 	}
@@ -770,5 +874,7 @@ void GUIClient::draw()
 	m_window.draw(m_robber);
 	m_window.draw(m_dice_1);
 	m_window.draw(m_dice_2);
+	m_window.draw(m_roll_dice);
+	m_window.draw(m_finish_turn);
 	m_window.display();
 }
